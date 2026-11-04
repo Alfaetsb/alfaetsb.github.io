@@ -1,6 +1,6 @@
 /* Alfa ETS~B — cache hors connexion (réseau d'abord) pour le site et l'application */
-const C='alfa-etsb-v79';
-const A=['./','index.html','app','app.html','manifest.webmanifest','icon-192.png','icon-512.png','img-logo.webp'];
+const C='alfa-etsb-v80';
+const A=['./','index.html','img-hero.webp','app','app.html','manifest.webmanifest','icon-192.png','icon-512.png','img-logo.webp'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>Promise.all(A.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
