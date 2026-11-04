@@ -3404,5 +3404,22 @@ function ask(){var o=document.createElement('div');o.id='asyAsk';o.style.cssText
 setTimeout(go,3200);window.addEventListener('online',function(){setTimeout(go,800)});
 })();
 </script>
+<script id="alfa-v81-lockfix">
+/* v81 — iPhone : l'écran de connexion masque complètement l'application (clavier ouvert) */
+(function(){
+var st=document.createElement('style');st.textContent=
+'html.lkOn,html.lkOn body{overflow:hidden!important;height:100%!important;overscroll-behavior:none}'+
+'html.lkOn body>*:not(#lk):not(#sheet):not(script):not(style):not(#alfaSplash){visibility:hidden!important}'+
+'html.lkOn body{background:#eaf1fb!important}'+
+'#lk{overflow-y:auto!important;-webkit-overflow-scrolling:touch;height:100%;min-height:100dvh;align-items:flex-start!important}'+
+'#lk .lw{margin:0 auto}';
+document.head.appendChild(st);
+var lk=document.getElementById('lk');if(!lk)return;
+function upd(){var on=getComputedStyle(lk).display!=='none';document.documentElement.classList.toggle('lkOn',on);if(on){try{window.scrollTo(0,0)}catch(e){}}}
+new MutationObserver(upd).observe(lk,{attributes:true,attributeFilter:['style','class']});upd();
+/* le champ PIN reste visible au-dessus du clavier */
+lk.addEventListener('focusin',function(e){var t=e.target;if(t&&/INPUT|SELECT/.test(t.tagName))setTimeout(function(){try{t.scrollIntoView({block:'center',behavior:'smooth'})}catch(x){}},300)});
+})();
+</script>
 <script>(function(){var e=document.getElementById("alfaSplash");if(e){e.style.transition="opacity .25s";e.style.opacity="0";setTimeout(function(){e.remove()},260)}})();</script>
 </body></html>
