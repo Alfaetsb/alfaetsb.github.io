@@ -3365,5 +3365,44 @@ body.alfa.dk .thSw{background:#0f1829!important}body.alfa.dk .thSw button{color:
 <script>(function(){try{document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name=color-scheme]');if(!m){m=document.createElement('meta');m.name='color-scheme';document.head.appendChild(m)}m.content='light';document.title=document.title.replace(/\(v\d+\)/,'(v78)')}catch(e){}})();</script>
 <script>/* PWA : fonctionnement hors connexion quand l'app est en ligne (https) */
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){r.addEventListener('updatefound',function(){var w=r.installing;w&&w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller){try{toast('Nouvelle version disponible — rouvrez l’application')}catch(e){}}})})}).catch(function(){})})}
-</script><script>(function(){var e=document.getElementById("alfaSplash");if(e){e.style.transition="opacity .25s";e.style.opacity="0";setTimeout(function(){e.remove()},260)}})();</script>
+</script><script id="alfa-v80-autosync">
+/* v80 — synchronisation automatique : configuration intégrée + premier démarrage sans code */
+(function(){
+var CK='alfa-sync-cfg',DONE='alfa-autosync-v1';
+var DEF={url:'https://alfa-etsb-default-rtdb.europe-west1.firebasedatabase.app',key:'AIzaSyDtgk-Oz4OI7qUGlCTyqEu4YN8iuGnqeZY',shop:'alfa-etsb'};
+function has(k){try{return localStorage.getItem(k)!==null}catch(e){return true}}
+function mark(){try{localStorage.setItem(DONE,'1')}catch(e){}}
+if(!window.__sync||has(DONE))return;
+var cur=window.__sync.cfg()||{};
+if(cur.url&&cur.shop){mark();return} /* déjà configuré à la main */
+function hasLocalData(){try{return (S.ventes||[]).length>0||(S.users||[]).length>1||(S.boutiques||[]).length>0||(S.depenses||[]).length>0||(S.clients||[]).length>0||(S.lots||[]).length>1||(S.dettes||[]).length>0}catch(e){return false}}
+function quiet(fn){var a=window.alert,d=window._dlg;window.alert=function(){};window._dlg=function(m,b,cb){cb()};
+ return Promise.resolve().then(fn).finally(function(){setTimeout(function(){window.alert=a;window._dlg=d},4000)})}
+var running=false;
+async function token(){try{var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+DEF.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});var j=await r.json();return j.idToken||''}catch(e){return null}}
+async function go(){if(running||has(DONE))return;if(navigator.onLine===false)return;running=true;
+ try{
+  var t=await token();if(t===null){running=false;return}
+  var r=await fetch(DEF.url+'/shops/'+DEF.shop+'/r.json?shallow=true'+(t?'&auth='+encodeURIComponent(t):'')).catch(function(){return null});
+  if(!r||!r.ok){running=false;return}
+  var cloud=null;try{cloud=await r.json()}catch(e){}
+  var cloudHas=!!(cloud&&typeof cloud==='object'&&Object.keys(cloud).length);
+  if(!cloudHas){window.__sync.setCfg(DEF);await quiet(function(){return window.syncInit('push')});mark();toastI('☁ Synchronisation activée : ce téléphone alimente le cloud')}
+  else if(!hasLocalData()){window.__sync.setCfg(DEF);await quiet(function(){return window.syncInit('pull')});mark();toastI('☁ Données récupérées du cloud. Connectez-vous.')}
+  else ask();
+ }catch(e){}running=false}
+function toastI(m){try{var t=document.createElement('div');t.textContent=m;t.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(90px + env(safe-area-inset-bottom,0px));z-index:99998;background:#0a1f4d;color:#fff;padding:14px 16px;border-radius:14px;font:600 14px system-ui,sans-serif;text-align:center;box-shadow:0 8px 24px #0005';document.body.appendChild(t);setTimeout(function(){t.remove()},5000)}catch(e){}}
+function ask(){var o=document.createElement('div');o.id='asyAsk';o.style.cssText='position:fixed;inset:0;z-index:99997;background:rgba(5,17,40,.6);display:flex;align-items:center;justify-content:center;padding:16px';
+ o.innerHTML='<div style="background:#fff;color:#102044;border-radius:20px;padding:22px;max-width:420px;font:15px/1.5 system-ui,sans-serif"><div style="font:800 19px system-ui,sans-serif;margin-bottom:8px">☁ Synchronisation automatique</div><p style="margin:0 0 14px;color:#55627a">Ce téléphone contient déjà des données, et le cloud aussi. Que voulez-vous faire ?</p>'+
+ '<button id="asyPull" style="width:100%;border:0;border-radius:12px;padding:13px;background:#145bd7;color:#fff;font:700 15px system-ui,sans-serif;margin-bottom:8px">⬇ Utiliser les données du cloud (recommandé)</button>'+
+ '<button id="asyPush" style="width:100%;border:1.5px solid #c9d6e6;border-radius:12px;padding:13px;background:#fff;color:#0d2a5c;font:700 15px system-ui,sans-serif;margin-bottom:8px">⬆ Ce téléphone a les bonnes données : remplacer le cloud</button>'+
+ '<button id="asyLater" style="width:100%;border:0;background:none;color:#55627a;font:600 14px system-ui,sans-serif;padding:8px">Plus tard</button></div>';
+ document.body.appendChild(o);
+ document.getElementById('asyPull').onclick=async function(){o.remove();window.__sync.setCfg(DEF);await quiet(function(){return window.syncInit('pull')});mark();toastI('☁ Données récupérées du cloud. Connectez-vous.')};
+ document.getElementById('asyPush').onclick=function(){if(!confirm('Les données du cloud seront remplacées par celles de ce téléphone, et les autres téléphones devront les récupérer. Continuer ?'))return;o.remove();window.__sync.setCfg(DEF);quiet(function(){return window.syncInit('push')}).then(function(){mark();toastI('☁ Cloud mis à jour avec ce téléphone')})};
+ document.getElementById('asyLater').onclick=function(){o.remove()}}
+setTimeout(go,3200);window.addEventListener('online',function(){setTimeout(go,800)});
+})();
+</script>
+<script>(function(){var e=document.getElementById("alfaSplash");if(e){e.style.transition="opacity .25s";e.style.opacity="0";setTimeout(function(){e.remove()},260)}})();</script>
 </body></html>
