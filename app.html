@@ -1374,13 +1374,14 @@ async function token(){if(!cfg.key)return'';
  if(auth&&auth.exp>Date.now()+60000)return auth.id;
  let r,j;
  if(auth&&auth.ref){r=await fetch('https://securetoken.googleapis.com/v1/token?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.ref)});j=await r.json();if(j.id_token){auth={id:j.id_token,ref:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000};sv(AK,auth);return auth.id}}
+ if(localStorage.getItem('alfa-cloud-mode')==='email'){auth=null;sv(AK,null);throw new Error('Ce téléphone n’est pas connecté au cloud : touchez ☁ puis « Se connecter » avec votre e-mail.')}
  r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});j=await r.json();
  if(!j.idToken)throw new Error('Connexion refusée par Firebase : activez « Anonyme » dans Authentication › Sign-in method'+(j.error&&j.error.message?' ('+j.error.message+')':'')+'.');
  auth={id:j.idToken,ref:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000};sv(AK,auth);return auth.id}
 async function api(path,opt,qs){const t=await token(),base=cfg.url.replace(/\/+$/,'')+'/shops/'+encodeURIComponent(cfg.shop)+'/'+path+'.json?'+(qs?qs+'&':'')+(t?'auth='+encodeURIComponent(t):'');
  let r;try{r=await fetch(base,opt||{})}catch(e){throw new Error('Pas de connexion internet (ou Firebase injoignable).')}
  if(!r.ok){let m='';try{m=((await r.json())||{}).error||''}catch(e){}
-  if(r.status===401||r.status===403)throw new Error('Accès refusé par Firebase (erreur '+r.status+') : les règles de la base sont expirées ou fermées. Ouvrez Firebase › Realtime Database › Règles.');
+  if(r.status===401||r.status===403)throw new Error('Accès refusé par Firebase (erreur '+r.status+') : connectez ce téléphone avec son compte (☁ › 🔐 Compte cloud), ou vérifiez que ce compte fait partie de l’équipe.');
   throw new Error('Serveur : erreur '+r.status+(m?' — '+m:''))}
  return r.json()}
 function bodyOf(recs){const b={},U={'.sv':'timestamp'};
@@ -1486,7 +1487,7 @@ try{const h=document.getElementById('whoBtn');if(h)h.insertAdjacentHTML('beforeb
 badge();
 try{setInterval(()=>{if(typeof document==='undefined'||document.visibilityState!=='hidden')tick()},12000);window.addEventListener('online',()=>sched(300));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sched(300)})}catch(e){}
 sched(2500);
-window.__sync={scan,flush,pull,tick,token,cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
+window.__sync={scan,flush,pull,tick,token,setAuth:a=>{auth=a;sv(AK,a);err='';badge()},cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
 })();
 /* ===== v36 : dépôts bancaires (initiés par le comptable, validés par l'administrateur) + registre des banques ===== */
 (function(){
@@ -4016,6 +4017,59 @@ window.dvPdfWa=async function(id){wait('Préparation du devis PDF…');var r;try
  '<a class="btn ghost" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="'+u+'" target="_blank" rel="noopener">👁 Voir le PDF</a>'+
  '<button class="btn ghost" style="width:100%;margin-top:8px" onclick="dvOpen('+id+')">‹ Retour au devis</button>'+
  '<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">'+(canSh?'Choisissez WhatsApp puis le contact '+(x.tel?'('+esc(x.tel)+')':'')+'.':'Le PDF sera téléchargé et WhatsApp s’ouvrira : joignez-le avec 📎 › Document.')+'</p>')};
+})();
+</script>
+<script id="alfa-v92-comptes">
+/* v92 — comptes cloud par e-mail et mot de passe (remplace la connexion anonyme) */
+(function(){
+var UK='alfa-cloud-user',MK='alfa-cloud-mode',OK_='alfa-cloud-owner';
+function g(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}function st(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}
+function C(){return (window.__sync&&__sync.cfg())||{}}
+function key(){return C().key||'AIzaSyDtgk-Oz4OI7qUGlCTyqEu4YN8iuGnqeZY'}
+function ek(e){return String(e||'').trim().toLowerCase().replace(/\./g,',')}
+var ERR={EMAIL_EXISTS:'Cet e-mail a déjà un compte.',EMAIL_NOT_FOUND:'E-mail inconnu.',INVALID_PASSWORD:'Mot de passe incorrect.',INVALID_LOGIN_CREDENTIALS:'E-mail ou mot de passe incorrect.',INVALID_EMAIL:'Adresse e-mail invalide.',MISSING_PASSWORD:'Entrez le mot de passe.',USER_DISABLED:'Ce compte est désactivé.',TOO_MANY_ATTEMPTS_TRY_LATER:'Trop d’essais : réessayez dans quelques minutes.',OPERATION_NOT_ALLOWED:'Activez « E-mail/Mot de passe » dans Firebase › Authentication › Sign-in method.',ADMIN_ONLY_OPERATION:'Création de compte bloquée dans Firebase (Authentication › Settings › User actions).'};
+function fr(m){m=String(m||'');var k=m.split(' ')[0].split(':')[0];if(/^WEAK_PASSWORD/.test(m))return 'Mot de passe trop court : 6 caractères minimum.';return ERR[k]||m||'Erreur inconnue.'}
+async function idt(path,body){var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:'+path+'?key='+key(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});var j=await r.json();if(j.error)throw new Error(fr(j.error.message));return j}
+function keep(j,email){__sync.setAuth({id:j.idToken,ref:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000});st(UK,(email||j.email||'').toLowerCase());st(MK,'email')}
+async function base(){var c=C();if(!c.url||!c.shop)throw new Error('La synchronisation n’est pas configurée.');return c.url.replace(/\/+$/,'')+'/shops/'+encodeURIComponent(c.shop)}
+async function call(path,opt){var t=await __sync.token(),u=(await base())+'/'+path+'.json?auth='+encodeURIComponent(t);var r=await fetch(u,opt||{});if(!r.ok)throw new Error(r.status===401||r.status===403?'Accès refusé par Firebase (règles).':'Erreur serveur '+r.status);return r.json()}
+function rules(owner){var o=String(owner||'').trim().toLowerCase().replace(/'/g,''),T="auth != null && auth.token.email != null && (auth.token.email == '"+o+"' || root.child('shops').child($shop).child('team').child(auth.token.email.replace('.', ',')).exists())";
+ return JSON.stringify({rules:{shops:{"$shop":{".read":T,"team":{".write":"auth != null && auth.token.email == '"+o+"'"},"catalog":{".read":true,".write":T},"r":{".write":T,".indexOn":["_u"],"$k":{".write":"($k.beginsWith('webdevis~') && !data.exists() && newData.child('c').val() == 'webdevis')"}}}}}},null,2)}
+window.cloudRules=rules;
+function adm(){return ME&&ME.role==='Administrateur'}
+/* ---------- écran ---------- */
+window.acctSheet=async function(){var u=g(UK),mode=g(MK),own=g(OK_);
+ var h='<h2 style="margin-top:0">🔐 Compte cloud</h2>';
+ if(u&&mode==='email')h+='<div class="k" style="margin-bottom:10px"><span>Ce téléphone est connecté avec</span><b style="font-size:17px;word-break:break-all">'+esc(u)+'</b>'+(own&&own===u?'<span>👑 Compte propriétaire</span>':'')+'</div><button class="btn ghost" style="width:100%" onclick="acctOut()">Se déconnecter du cloud</button>';
+ else h+='<p style="color:var(--mut);margin-top:0">Connectez ce téléphone au cloud avec l’e-mail et le mot de passe donnés par l’administrateur. À faire <b>une seule fois</b> par téléphone.</p><label>E-mail</label><input id="acE" type="email" inputmode="email" autocomplete="username" placeholder="exemple@gmail.com"><label>Mot de passe</label><input id="acP" type="password" autocomplete="current-password" placeholder="••••••"><button class="btn gold" style="width:100%;margin-top:12px" onclick="acctIn()">Se connecter</button><button class="btn ghost" style="width:100%;margin-top:8px" onclick="acctReset()">Mot de passe oublié</button>'+
+  (adm()?'<div style="border-top:1px dashed var(--line);margin:16px 0 8px"></div><h2 style="margin:6px 0">👑 Première fois ? Créer le compte propriétaire</h2><p style="color:var(--mut);margin-top:0;font-size:14px">Réservé à l’administrateur principal : ce compte gère les accès de l’équipe.</p><button class="btn" style="width:100%" onclick="acctOwner()">Créer le compte propriétaire avec cet e-mail</button>':'');
+ if(adm()&&u&&mode==='email'&&own===u)h+='<h2 style="margin:18px 0 6px">👥 Comptes de l’équipe</h2><div id="acT"><div class="empty" style="padding:10px">Chargement…</div></div>'+
+  '<h3 style="margin:14px 0 4px">➕ Ajouter un employé</h3><label>Nom</label><input id="anN" placeholder="Ex : Moussa (vendeur Labé)"><label>E-mail</label><input id="anE" type="email" inputmode="email" placeholder="employe@gmail.com"><label>Mot de passe (6 caractères min.)</label><input id="anP" type="text" autocomplete="off" placeholder="Ex : Labe2026!"><button class="btn gold" style="width:100%;margin-top:10px" onclick="acctAdd()">Créer le compte</button>'+
+  '<h2 style="margin:18px 0 6px">🛡 Règles de sécurité Firebase</h2><p style="color:var(--mut);margin-top:0;font-size:14px">À coller dans Firebase › Realtime Database › Règles, puis « Publier ». Seuls le propriétaire et les comptes de l’équipe auront accès aux données.</p><button class="btn" style="width:100%" onclick="acctRules()">📋 Copier les règles</button>';
+ h+='<button class="btn ghost" style="width:100%;margin-top:12px" onclick="syncSheet()">‹ Retour</button>';
+ openSheet(h);if(document.getElementById('acT'))acctTeam()};
+window.acctIn=async function(){var e=($('acE').value||'').trim().toLowerCase(),p=$('acP').value||'';if(!e||!p){alert('Entrez l’e-mail et le mot de passe.');return}
+ try{var j=await idt('signInWithPassword',{email:e,password:p,returnSecureToken:true});keep(j,e);try{logA('Téléphone connecté au cloud : '+e)}catch(x){}
+  try{await __sync.tick()}catch(x){}alert('✅ Téléphone connecté au cloud avec '+e+'.');acctSheet()}catch(x){alert(x.message)}};
+window.acctOwner=async function(){var e=($('acE').value||'').trim().toLowerCase(),p=$('acP').value||'';if(!e||!p){alert('Entrez d’abord votre e-mail et un mot de passe (6 caractères minimum) dans les champs ci-dessus.');return}
+ if(!confirm('Créer le compte propriétaire '+e+' ?\nGardez bien ce mot de passe.'))return;
+ try{var j;try{j=await idt('signUp',{email:e,password:p,returnSecureToken:true})}catch(x){if(/déjà un compte/.test(x.message))j=await idt('signInWithPassword',{email:e,password:p,returnSecureToken:true});else throw x}
+  keep(j,e);st(OK_,e);try{await call('team/'+ek(e),{method:'PUT',body:JSON.stringify({nom:(ME&&ME.nom)||'Administrateur',role:'Propriétaire',d:new Date().toISOString()})})}catch(x){}
+  try{logA('Compte propriétaire cloud créé : '+e)}catch(x){}alert('✅ Compte propriétaire créé.\n\nÉtape suivante : touchez « Copier les règles » et collez-les dans Firebase.');acctSheet()}catch(x){alert(x.message)}};
+window.acctOut=function(){if(!confirm('Déconnecter ce téléphone du cloud ? La synchronisation s’arrêtera jusqu’à la prochaine connexion.'))return;__sync.setAuth(null);st(UK,'');acctSheet()};
+window.acctReset=async function(){var e=($('acE').value||'').trim();if(!e){alert('Entrez votre e-mail dans le champ, puis touchez « Mot de passe oublié ».');return}
+ try{await idt('sendOobCode',{requestType:'PASSWORD_RESET',email:e});alert('📧 Un e-mail pour changer le mot de passe a été envoyé à '+e+'.')}catch(x){alert(x.message)}};
+window.acctRules=function(){var t=rules(g(OK_)||g(UK));try{navigator.clipboard.writeText(t).then(function(){alert('📋 Règles copiées.\n\nFirebase › Realtime Database › Règles : effacez tout, collez, puis « Publier ».')},function(){prompt('Copiez ces règles :',t)})}catch(e){prompt('Copiez ces règles :',t)}};
+window.acctTeam=async function(){var el=document.getElementById('acT');if(!el)return;try{var T=await call('team')||{},own=g(OK_);
+ el.innerHTML=Object.keys(T).map(function(k){var x=T[k]||{},e=k.replace(/,/g,'.');return '<div class="item" style="cursor:default"><div class="t"><b>'+esc(x.nom||e)+'</b><span style="word-break:break-all">'+esc(e)+'</span><span>'+(e===own?'👑 Propriétaire':'Employé')+'</span></div>'+(e===own?'':'<button class="btn ghost" style="flex:none;width:auto;padding:8px 12px;color:#c62828!important" onclick="acctDel(\''+k+'\')">Retirer</button>')+'</div>'}).join('')||'<div class="empty" style="padding:10px">Aucun compte.</div>'}catch(x){el.innerHTML='<div class="empty" style="padding:10px">'+esc(x.message)+'</div>'}};
+window.acctAdd=async function(){var n=($('anN').value||'').trim(),e=($('anE').value||'').trim().toLowerCase(),p=$('anP').value||'';if(!n||!e||!p){alert('Remplissez le nom, l’e-mail et le mot de passe.');return}
+ try{try{await idt('signUp',{email:e,password:p,returnSecureToken:true})}catch(x){if(!/déjà un compte/.test(x.message))throw x;if(!confirm('L’adresse '+e+' a déjà un compte Firebase (le mot de passe saisi n’est donc pas appliqué).\nSi vous ne l’avez pas créé vous-même, choisissez une autre adresse.\n\nDonner quand même l’accès à ce compte ?'))return}
+  await call('team/'+ek(e),{method:'PUT',body:JSON.stringify({nom:n,role:'Employé',d:new Date().toISOString()})});try{logA('Compte cloud ajouté : '+n+' ('+e+')')}catch(x){}
+  alert('✅ Compte créé pour '+n+'.\n\nSur son téléphone : ☁ › 🔐 Compte cloud › Se connecter avec :\n'+e+'\n'+p);$('anN').value='';$('anE').value='';$('anP').value='';acctTeam()}catch(x){alert(x.message)}};
+window.acctDel=async function(k){var e=k.replace(/,/g,'.');if(!confirm('Retirer l’accès au cloud pour '+e+' ?'))return;try{await call('team/'+k,{method:'DELETE'});try{logA('Accès cloud retiré : '+e)}catch(x){}acctTeam()}catch(x){alert(x.message)}};
+/* bouton dans l'écran de synchronisation */
+var _ss=window.syncSheet;window.syncSheet=function(){_ss.apply(this,arguments);var sb=document.getElementById('sheetBody');if(!sb)return;var u=g(UK),on=u&&g(MK)==='email';
+ var h='<button class="btn" style="width:100%;margin:0 0 8px;'+(on?'':'background:#c62828;color:#fff')+'" onclick="acctSheet()">🔐 Compte cloud : '+(on?esc(u):'non connecté — se connecter')+'</button>';var k=sb.querySelector('.k');if(k)k.insertAdjacentHTML('afterend',h);else sb.insertAdjacentHTML('afterbegin',h)};
 })();
 </script>
 <script id="alfa-v81-lockfix">
