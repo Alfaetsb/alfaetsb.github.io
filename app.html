@@ -3435,6 +3435,14 @@ TABS.push(['devis','🧾','Devis']);['Administrateur','Vendeur','Comptable'].for
 $('nav').insertAdjacentHTML('beforeend','<button id="b-devis" onclick="go(\'devis\')" style="display:none"><b>'+SVG+'</b>Devis</button>');
 var _r=render;render=function(){if(cur==='devis'){try{ctx()}catch(e){}renderDevis();return}return _r.apply(this,arguments)};
 var DF='',D=null; /* filtre, brouillon */
+function bidD(){return D&&D.bid!=null&&D.bid!==undefined?D.bid:(curB||'')}
+function shopNm(b){if(b===''||b==null)return 'Stock principal';var x=(S.boutiques||[]).find(function(k){return String(k.id)===String(b)});return x?x.nom:'Boutique'}
+window.dvShopNm=shopNm;
+function pvAt(b,p){if(!p)return 0;if(b===''||b==null)return +(typeof mainPv==='function'?mainPv(p):p.pv)||0;return +(typeof shopPv==='function'?shopPv(b,p):p.pv)||0}
+function qtAt(b,p){if(String(b)===String(curB||''))return +p.qte||0;if(b===''||b==null)return +(MQ[p.id]!=null?MQ[p.id]:p.qte)||0;return +((S.bst||{})[b]||{})[p.id]||0}
+window.dvPvAt=pvAt;
+function dvPv(p){return pvAt(bidD(),p)}function dvQt(p){return qtAt(bidD(),p)}
+window.dvShop=function(v){var b=v===''?'':(isNaN(+v)?v:+v);D.bid=b;D.l.forEach(function(l){if(l.pid!=null&&!l.free){var p=P0(l.pid);if(p)l.pu=Math.round(dvPv(p))}});dvLines();dvPick()};
 function P0(id){return S.produits.find(function(p){return p.id===id})}
 function num(x){if(x.num)return x.num;return 'DEV-'+new Date(x.d).getFullYear()+'-'+String(x.id).slice(-4)}
 function nextNum(){var y=new Date().getFullYear(),mx=0;S.devis.forEach(function(x){var m=String(x.num||'').match(/^DEV-(\d{4})-(\d+)$/);if(m&&+m[1]===y)mx=Math.max(mx,+m[2])});return 'DEV-'+y+'-'+String(mx+1).padStart(4,'0')}
@@ -3456,12 +3464,13 @@ window.renderDevis=function(){var t=$('t-devis');if(!t)return;var q=(DF||'').toL
  (L.map(function(x){var st=stOf(x);return '<div class="item" onclick="dvOpen('+x.id+')"><div class="t"><b>'+esc(x.client||'Client')+'</b><span>'+num(x)+' · '+dt(x.d)+' · '+x.l.length+' produit'+(x.l.length>1?'s':'')+'</span><span style="color:'+st[2]+'!important;font-weight:600">'+st[0]+' '+st[1]+'</span></div><span class="badge">'+G(tot(x))+'</span></div>'}).join('')||'<div class="empty">Aucun devis. Touchez « Nouveau devis » pour en créer un.</div>')};
 window.dvF=function(v){DF=v;var p=document.activeElement&&document.activeElement.selectionStart;renderDevis();var i=document.querySelector('#t-devis input');if(i){i.focus();try{i.setSelectionRange(p,p)}catch(e){}}};
 /* ---------- édition ---------- */
-window.dvNew=function(){D={id:0,client:'',tel:'',rem:0,val:15,note:'',l:[]};dvEdit()};
-window.dvEditId=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;D=JSON.parse(JSON.stringify(x));D.rem=D.rem||0;D.val=D.val||15;D.tel=D.tel||'';D.note=D.note||'';dvEdit()};
+window.dvNew=function(){D={id:0,client:'',tel:'',rem:0,val:15,note:'',l:[],bid:curB||''};dvEdit()};window.dvFromWeb=function(o){D=Object.assign({id:0,client:'',tel:'',rem:0,val:15,note:'',l:[],bid:curB||''},o);D.l.forEach(function(l){if(l.pid!=null&&!l.free){var p=P0(l.pid);if(p)l.pu=Math.round(dvPv(p))}});dvEdit()};
+window.dvEditId=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;D=JSON.parse(JSON.stringify(x));D.rem=D.rem||0;D.val=D.val||15;D.tel=D.tel||'';D.note=D.note||'';if(D.bid==null)D.bid='';dvEdit()};
 function dvEdit(){window.DV=D;var cl=(S.clients||[]).slice().sort(function(a,b){return a.nom.localeCompare(b.nom)});
  openSheet('<h2 style="margin-top:0">'+(D.id?'Modifier le devis '+esc(num(D)):'Nouveau devis')+'</h2>'+
  '<label>Client *</label><input id="dvC" list="dvCl" value="'+esc(D.client)+'" placeholder="Nom du client" oninput="dvCli(this.value)" autocomplete="off"><datalist id="dvCl">'+cl.map(function(c){return '<option value="'+esc(c.nom)+'">'}).join('')+'</datalist>'+
  '<label>WhatsApp / téléphone du client</label><input id="dvT" type="tel" inputmode="tel" value="'+esc(D.tel)+'" placeholder="Ex : 622 00 00 00">'+
+ ((S.boutiques||[]).length?(ME&&ME.role==='Administrateur'?'<label>🏬 Boutique du devis (ses prix de vente sont appliqués)</label><select id="dvB" onchange="dvShop(this.value)" style="font-weight:700">'+[['','🏭 Stock principal']].concat((S.boutiques||[]).map(function(b){return [String(b.id),'🏬 '+b.nom]})).map(function(o){return '<option value="'+o[0]+'"'+(String(bidD())===o[0]?' selected':'')+'>'+esc(o[1])+'</option>'}).join('')+'</select>':'<label>🏬 Boutique du devis</label><input readonly value="'+esc(shopNm(bidD()))+'">'):'')+
  '<h2 style="margin:16px 0 6px">Produits du devis</h2><div id="dvL"></div>'+
  '<h2 style="margin:14px 0 6px">➕ Ajouter depuis le magasin</h2><input id="dvQ" placeholder="🔎 Rechercher (nom, référence)…" oninput="dvPick()" autocomplete="off"><div class="chips" id="dvTy" style="flex-wrap:nowrap;overflow-x:auto;margin:6px 0"></div><div id="dvP" class="dvCat"></div>'+
  '<button class="btn ghost" style="width:100%;margin:8px 0" onclick="dvFree()">✍️ Ajouter un article hors catalogue</button>'+
@@ -3477,9 +3486,9 @@ window.dvPick=function(){var q=($('dvQ').value||'').trim().toLowerCase(),ty=func
  var types=[];S.produits.forEach(function(p){var t=ty(p);if(types.indexOf(t)<0)types.push(t)});
  $('dvTy').innerHTML=['Tous'].concat(types).map(function(t){var on=(t==='Tous'?'':t)===DTY;return '<span class="chip" style="flex:none;'+(on?'background:#145bd7;color:#fff;border-color:#145bd7':'')+'" onclick="dvTy(\''+(t==='Tous'?'':t.replace(/'/g,"\\'"))+'\')">'+esc(t)+'</span>'}).join('');
  var L=S.produits.filter(function(p){return (!DTY||ty(p)===DTY)&&(!q||(p.nom+' '+(p.sku||'')).toLowerCase().indexOf(q)>=0)}).sort(function(a,c){return a.nom.localeCompare(c.nom,'fr')});
- $('dvP').innerHTML=L.map(function(p){var inD=DV.l.find(function(l){return l.pid===p.id});return '<div class="item'+(inD?' dvIn':'')+'" onclick="dvAdd('+p.id+')">'+(typeof thumb==='function'?thumb(p):'')+'<div class="t"><b>'+esc(p.nom)+'</b><span>'+esc(p.sku||'')+' · stock '+f(p.qte)+'</span><span style="color:var(--ink)!important;font-weight:700">'+(p.pv?G(p.pv):'prix à fixer')+'</span></div><span class="badge"'+(inD?' style="background:#145bd7!important;color:#fff!important"':'')+'>'+(inD?'× '+f(inD.q):'+')+'</span></div>'}).join('')||'<div class="empty" style="padding:10px">Aucun produit.</div>'};
+ $('dvP').innerHTML=L.map(function(p){var inD=DV.l.find(function(l){return l.pid===p.id});return '<div class="item'+(inD?' dvIn':'')+'" onclick="dvAdd('+p.id+')">'+(typeof thumb==='function'?thumb(p):'')+'<div class="t"><b>'+esc(p.nom)+'</b><span>'+esc(p.sku||'')+' · stock '+f(dvQt(p))+'</span><span style="color:var(--ink)!important;font-weight:700">'+(dvPv(p)?G(dvPv(p)):'prix à fixer')+'</span></div><span class="badge"'+(inD?' style="background:#145bd7!important;color:#fff!important"':'')+'>'+(inD?'× '+f(inD.q):'+')+'</span></div>'}).join('')||'<div class="empty" style="padding:10px">Aucun produit.</div>'};
 window.dvFree=function(){var n=prompt('Nom de l’article (hors catalogue) :');if(!n||!n.trim())return;DV.l.push({pid:null,nom:n.trim(),q:1,pu:0,free:1});dvLines();setTimeout(function(){var e=document.querySelectorAll('#dvL .cl');e=e[e.length-1];if(e){e.scrollIntoView({block:'center'});var i=e.querySelectorAll('input')[1];if(i)i.focus()}},50)};
-window.dvAdd=function(id){var p=P0(id);if(!p)return;var l=D.l.find(function(x){return x.pid===id});if(l)l.q++;else D.l.push({pid:id,q:1,pu:Math.round(+p.pv||0)});dvPick();dvLines()};
+window.dvAdd=function(id){var p=P0(id);if(!p)return;var l=D.l.find(function(x){return x.pid===id});if(l)l.q++;else D.l.push({pid:id,q:1,pu:Math.round(dvPv(p))});dvPick();dvLines()};
 function lockP(l){return ME&&ME.role==='Vendeur'&&!l.free&&l.pid!=null}
 function dvLines(){$('dvL').innerHTML=D.l.map(function(l,i){var p=P0(l.pid);return '<div class="cl"><div class="cl1"><b>'+esc(p?p.nom:(l.nom||'Produit supprimé'))+(l.free?' <small style="color:var(--mut);font-weight:500">(hors catalogue)</small>':'')+'</b><button class="link" onclick="DV.l.splice('+i+',1);dvLines();dvPick()">✕</button></div><div class="row"><div><label>Quantité</label><input type="number" inputmode="numeric" value="'+l.q+'" oninput="DV.l['+i+'].q=Math.max(0,+this.value||0);dvTot()"></div><div><label>Prix unitaire (GNF)'+(lockP(l)?' · prix magasin':'')+'</label><input type="number" inputmode="numeric" value="'+(l.pu||'')+'"'+(lockP(l)?' readonly style="background:#eef2f8"':'')+' oninput="DV.l['+i+'].pu=Math.max(0,Math.round(+this.value||0));dvTot()"></div></div></div>'}).join('')||'<div class="empty" style="padding:10px">Recherchez et touchez un produit pour l’ajouter.</div>';dvTot()}
 window.dvTot=function(){var s=sub(D),r=Math.round(s*(+D.rem||0)/100);var e=$('dvTot');if(e)e.innerHTML='<span>Sous-total : '+G(s)+(r?' · remise −'+G(r):'')+'</span><b>'+G(s-r)+'</b><span>Total du devis</span>'};
@@ -3489,19 +3498,20 @@ window.dvSave=function(send){D.client=($('dvC').value||'').trim();D.tel=($('dvT'
  var x;if(D.id){x=S.devis.find(function(k){return k.id===D.id});if(!x)return;Object.assign(x,D);logA('Devis modifié — '+num(x))}
  else{x=Object.assign({},D,{id:Date.now(),d:new Date().toISOString(),u:ME?ME.nom:'',num:nextNum()});S.devis.push(x);logA('Devis créé — '+x.num+' · '+x.client)}
  if(x.tel&&!(S.clients||[]).some(function(c){return c.nom.toLowerCase()===x.client.toLowerCase()})){}
- save();closeSheet();if(cur!=='devis')go('devis');else renderDevis();if(send)dvSend(x.id);else dvOpen(x.id)};
+ save();closeSheet();if(cur!=='devis')go('devis');else renderDevis();if(send)dvPdfWa(x.id);else dvOpen(x.id)};
 /* ---------- fiche ---------- */
 window.dvOpen=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;var st=stOf(x),s=sub(x),r=s-tot(x);
- openSheet('<h2 style="margin-top:0">🧾 '+esc(num(x))+'</h2><p style="color:var(--mut);margin:0 0 10px">'+esc(x.client||'')+(x.tel?' · '+esc(x.tel):'')+'<br>Du '+dt(x.d)+' · valable jusqu’au '+dt(valid(x))+' · '+esc(x.u||'')+'<br><b style="color:'+st[2]+'">'+st[0]+' '+st[1]+'</b>'+(x.sent?' · envoyé le '+dt(x.sent):'')+'</p>'+
+ openSheet('<h2 style="margin-top:0">🧾 '+esc(num(x))+'</h2><p style="color:var(--mut);margin:0 0 10px">'+esc(x.client||'')+(x.tel?' · '+esc(x.tel):'')+'<br>🏬 '+esc(shopNm(x.bid))+'<br>Du '+dt(x.d)+' · valable jusqu’au '+dt(valid(x))+' · '+esc(x.u||'')+'<br><b style="color:'+st[2]+'">'+st[0]+' '+st[1]+'</b>'+(x.sent?' · envoyé le '+dt(x.sent):'')+'</p>'+
  x.l.map(function(l){var p=P0(l.pid);return '<div class="item" style="cursor:default">'+(p&&typeof thumb==='function'?thumb(p):'')+'<div class="t"><b>'+esc(p?p.nom:(l.nom||'Produit supprimé'))+'</b><span>'+f(l.q)+' × '+G(l.pu)+'</span></div><span class="badge">'+G(l.q*l.pu)+'</span></div>'}).join('')+
  '<div class="k gold" style="margin:10px 0"><span>'+(r?'Sous-total '+G(s)+' · remise '+f(x.rem,0)+' % (−'+G(r)+')':'Total')+'</span><b>'+G(tot(x))+'</b></div>'+(x.note?'<p style="color:var(--mut);font-size:14px">📌 '+esc(x.note)+'</p>':'')+
- '<button class="btn" style="width:100%;background:#22b55a" onclick="dvSend('+id+')">📤 Envoyer sur WhatsApp'+(x.tel?' à '+esc(x.client):'')+'</button>'+
- '<div class="row" style="margin-top:8px"><button class="btn ghost" onclick="dvPrint('+id+')">🖨 Imprimer / PDF</button><button class="btn ghost" onclick="dvEditId('+id+')">✏️ Modifier</button></div>'+
+ '<button class="btn" style="width:100%;background:#22b55a" onclick="dvPdfWa('+id+')">📄 Envoyer le devis PDF sur WhatsApp</button>'+
+ '<div class="row" style="margin-top:8px"><button class="btn ghost" onclick="dvPdfDl('+id+')">⬇ Télécharger le PDF</button><button class="btn ghost" onclick="dvSend('+id+')">💬 Envoyer en texte</button></div>'+
+ '<div class="row" style="margin-top:8px"><button class="btn ghost" onclick="dvPrint('+id+')">🖨 Imprimer</button><button class="btn ghost" onclick="dvEditId('+id+')">✏️ Modifier</button></div>'+
  '<div class="row" style="margin-top:8px">'+(x.conv?'':'<button class="btn gold" onclick="closeSheet();devisConv('+id+')">🛒 Convertir en vente</button>')+'<button class="btn ghost" onclick="dvDup('+id+')">⧉ Dupliquer</button></div>'+
  '<div class="row" style="margin-top:8px"><button class="btn red" onclick="devisDel('+id+')">Supprimer</button><button class="btn ghost" onclick="closeSheet()">Fermer</button></div>')};
 devisDetail=function(id){dvOpen(id)};
-window.dvDup=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;D={id:0,client:x.client,tel:x.tel||'',rem:x.rem||0,val:x.val||15,note:x.note||'',l:JSON.parse(JSON.stringify(x.l))};dvEdit()};
-function txt(x){var s=sub(x),r=s-tot(x);return '*DEVIS '+num(x)+'* — '+(S.nom||'Alfa ETS~B')+'\nClient : '+(x.client||'')+'\nDate : '+dt(x.d)+' · valable jusqu’au '+dt(valid(x))+'\n\n'+
+window.dvDup=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;D={id:0,client:x.client,tel:x.tel||'',rem:x.rem||0,val:x.val||15,note:x.note||'',l:JSON.parse(JSON.stringify(x.l)),bid:x.bid!=null?x.bid:''};dvEdit()};
+function txt(x){var s=sub(x),r=s-tot(x);return '*DEVIS '+num(x)+'* — '+(S.nom||'Alfa ETS~B')+'\nClient : '+(x.client||'')+((S.boutiques||[]).length?'\nBoutique : '+shopNm(x.bid):'')+'\nDate : '+dt(x.d)+' · valable jusqu’au '+dt(valid(x))+'\n\n'+
  x.l.map(function(l,i){var p=P0(l.pid);return (i+1)+'. '+(p?p.nom:(l.nom||'Produit'))+'\n   '+f(l.q)+' × '+G(l.pu)+' = *'+G(l.q*l.pu)+'*'}).join('\n')+
  '\n\n'+(r?'Sous-total : '+G(s)+'\nRemise '+f(x.rem,0)+' % : −'+G(r)+'\n':'')+'*TOTAL : '+G(tot(x))+'*'+(x.note?'\n\n📌 '+x.note:'')+'\n\nMerci pour votre confiance 🙏\n'+(S.nom||'Alfa ETS~B')+' — alfaetsb.com'}
 window.dvSend=function(id){var x=S.devis.find(function(k){return k.id===id});if(!x)return;var n=waNum(x.tel),u='https://wa.me/'+(n||'')+'?text='+encodeURIComponent(txt(x));
@@ -3511,11 +3521,12 @@ window.dvPrint=function(id){var x=S.devis.find(function(k){return k.id===id});if
  w.document.write('<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(num(x))+' — '+esc(x.client||'')+'</title><style>body{font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#0f1c3a;margin:0;padding:28px;max-width:800px;margin:auto}.h{display:flex;justify-content:space-between;gap:20px;border-bottom:4px solid #0a1f4d;padding-bottom:14px;margin-bottom:18px}.h b{font-size:26px;color:#0a1f4d}.h small{color:#5b6980}.t{font-size:22px;font-weight:800;color:#145bd7;text-align:right}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#0a1f4d;color:#fff;text-align:left;padding:9px;font-size:13px}td{padding:9px;border-bottom:1px solid #e2e9f3;vertical-align:top}.r{text-align:right;white-space:nowrap}.tot{margin-left:auto;width:300px}.tot div{display:flex;justify-content:space-between;padding:6px 0}.tot .g{border-top:2px solid #0a1f4d;font-size:19px;font-weight:800;color:#0a1f4d}.n{background:#f4f7fb;border-radius:10px;padding:12px;margin-top:16px}.f{margin-top:40px;color:#5b6980;font-size:12px;text-align:center}.b{display:flex;gap:10px;justify-content:center;margin:20px 0}.b button{padding:12px 18px;border:0;border-radius:10px;background:#0a1f4d;color:#fff;font:700 14px system-ui}@media print{.b{display:none}body{padding:0}}</style></head><body>'+
  '<div class="b"><button onclick="window.print()">🖨 Imprimer / Enregistrer en PDF</button></div>'+
  '<div class="h"><div><b>'+esc(S.nom||'Alfa ETS~B')+'</b><br><small>Inox • Aluminium • Accessoires<br>Conakry, Guinée · alfaetsb.com</small></div><div><div class="t">DEVIS</div><div class="r">N° <b>'+esc(num(x))+'</b><br>Date : '+dt(x.d)+'<br>Valable jusqu’au '+dt(valid(x))+'</div></div></div>'+
- '<div><small style="color:#5b6980">Client</small><br><b style="font-size:16px">'+esc(x.client||'')+'</b>'+(x.tel?'<br>'+esc(x.tel):'')+'</div>'+
+ '<div><small style="color:#5b6980">Client</small><br><b style="font-size:16px">'+esc(x.client||'')+'</b>'+(x.tel?'<br>'+esc(x.tel):'')+((S.boutiques||[]).length?'<br><small style="color:#5b6980">Boutique : '+esc(shopNm(x.bid))+'</small>':'')+'</div>'+
  '<table><thead><tr><th>#</th><th>Désignation</th><th class="r">Qté</th><th class="r">Prix unitaire</th><th class="r">Montant</th></tr></thead><tbody>'+rows+'</tbody></table>'+
  '<div class="tot">'+(r?'<div><span>Sous-total</span><span>'+G(s)+'</span></div><div><span>Remise '+f(x.rem,0)+' %</span><span>−'+G(r)+'</span></div>':'')+'<div class="g"><span>TOTAL</span><span>'+G(tot(x))+'</span></div></div>'+
  (x.note?'<div class="n"><b>Conditions :</b> '+esc(x.note)+'</div>':'')+
  '<div class="f">Établi par '+esc(x.u||'')+' — Merci pour votre confiance.</div></body></html>');w.document.close()};
+window.dvApi={num:num,sub:sub,tot:tot,valid:valid,P0:P0,waNum:waNum,txt:txt,shopNm:shopNm};
 /* conversion : marquer le devis */
 var _dc=devisConv;devisConv=function(id){var r=_dc.apply(this,arguments);var x=S.devis.find(function(k){return k.id===id});if(x){x.conv=x.conv||new Date().toISOString();save()}return r};
 /* menu Plus : sous-titre */
@@ -3842,6 +3853,156 @@ window.rcWa=function(id){go2(id,async function(r){var file;try{file=new File([r.
 var _r=recu;recu=function(id){var r=_r.apply(this,arguments);try{var gg=bonLines(id),trs=document.querySelectorAll('#recu .rc-t tbody tr'),SZ=gg.length>6?46:56,pcs=gg.reduce(function(a,l){return a+(+l.q||0)},0),tb=document.querySelector('#recu .rc-t');if(tb&&gg.length>6){tb.style.fontSize='13px';tb.querySelectorAll('tbody td:nth-child(n+3)').forEach(function(c){c.textContent=c.textContent.replace(/\s*GNF/,'')});tb.querySelectorAll('tbody td').forEach(function(c){c.style.padding='5px 3px'});var th=tb.querySelectorAll('th');if(th[2])th[2].textContent='P.U. (GNF)';if(th[3])th[3].textContent='Montant (GNF)'}if(tb)tb.insertAdjacentHTML('afterend','<div style="font-size:12px;color:#5f6c7a;font-weight:600;margin:2px 0 6px">'+gg.length+(gg.length>1?' articles':' article')+' · '+f(pcs)+(pcs>1?' pièces':' pièce')+'</div>');if(gg.some(function(l){return rcSrc(l)}))trs.forEach(function(tr,i){var l=gg[i];if(!l)return;var sr=rcSrc(l),td=tr.firstElementChild;td.innerHTML='<div style="display:flex;align-items:center;gap:8px">'+(sr?'<img src="'+sr+'" alt="" style="width:'+SZ+'px;height:'+SZ+'px;object-fit:cover;border-radius:6px;flex:none;border:1px solid #e2e9f3">':'<span style="width:'+SZ+'px;height:'+SZ+'px;border-radius:6px;background:#e8edf4;flex:none"></span>')+'<span>'+td.innerHTML+'</span></div>';tr.querySelectorAll('td').forEach(function(c){c.style.verticalAlign='middle'})})}catch(e){}try{var CI=coinInfo(bonLines(id)),rs=document.querySelector('#recu .rc-s');if(CI&&rs)rs.insertAdjacentHTML('afterend','<div class="rc-p" style="background:#eef4ff;border-radius:10px;padding:8px 10px;margin-top:8px"><small style="color:#145bd7;font-weight:700">🪙 Fidélité — coins</small><div><span>Gagnés avec cet achat</span><span style="color:#12924f;font-weight:700">+ '+f(CI.gn)+'</span></div>'+(CI.us?'<div><span>Utilisés pour cet achat</span><span style="color:#c62828;font-weight:700">− '+f(CI.us)+' ('+G(CI.uv)+')</span></div>':'')+'<div><span><b>Solde actuel</b></span><span><b>'+f(CI.so)+' coins</b> ('+G(CI.sv)+')</span></div></div>')}catch(e){}try{var b=document.getElementById('sheetBody'),old=b.querySelector('.row.noprint');if(old){
  old.outerHTML='<div id="rcAct"><button class="btn" style="width:100%;background:#22b55a" onclick="rcWa('+id+')">💬 Envoyer le reçu PDF par WhatsApp</button><div class="row" style="margin-top:8px"><button class="btn gold" onclick="rcPdf('+id+')">⬇ Télécharger PDF</button><button class="btn ghost" onclick="rcPrint('+id+')">🖨 Imprimer</button></div><p id="rcMsg" style="text-align:center;color:var(--mut);min-height:18px;margin:6px 0 0;font-size:13px"></p></div>'}}catch(e){}return r};
 var _rt=receipt;receipt=function(g){var t=_rt.apply(this,arguments);try{var CI=coinInfo(g);if(CI){var add='\n\n🪙 *Coins fidélité*\nGagnés : +'+f(CI.gn)+(CI.us?'\nUtilisés : -'+f(CI.us)+' ('+G(CI.uv)+')':'')+'\nSolde : *'+f(CI.so)+' coins* ('+G(CI.sv)+')';t=t.replace('\n\nMerci',add+'\n\nMerci');if(t.indexOf(add)<0)t+=add}}catch(e){}return t};
+})();
+</script>
+<script id="alfa-v89-webdevis">
+/* v89 — demandes de devis venant du site vitrine (alfaetsb.com) */
+(function(){
+if(!Array.isArray(S.webdevis))S.webdevis=[];
+var _n=norm;norm=function(o){o=_n(o);if(!Array.isArray(o.webdevis))o.webdevis=[];return o};
+var st=document.createElement('style');st.textContent='.wdChip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:900;background:#0a1f4d;color:#fff;border:0;border-radius:999px;padding:11px 18px;font:700 14px inherit;font-family:inherit;box-shadow:0 10px 28px #0a1f4d55;display:flex;gap:8px;align-items:center;white-space:nowrap}.wdChip i{background:#f5b301;color:#0a1f4d;border-radius:999px;min-width:22px;height:22px;display:grid;place-items:center;font-style:normal;font-size:12.5px;padding:0 6px}.wdBox{border:1.5px solid #f5b301;background:linear-gradient(180deg,#fff9e8,#fff);border-radius:16px;padding:10px 12px;margin:10px 0 14px}body.alfa.dk .wdBox{background:#1b2742;border-color:#8a6a10}.wdBox h3{margin:2px 0 8px;font-size:16px;display:flex;justify-content:space-between;align-items:center}.wdNew{display:inline-block!important;width:auto!important;background:#d93025;color:#fff!important;border-radius:999px;font-size:10.5px!important;line-height:1.5;padding:1px 8px;margin-left:6px;font-weight:800;vertical-align:middle}.item .t .wdNew,.wdBox .wdNew{color:#fff!important;background:#d93025!important}.wdI{background:var(--card,#f4f7fb);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px;font-size:14.5px;line-height:1.55}.wdI .nm{font-size:19px;font-weight:800;margin:2px 0 4px}.wdI .mu{color:var(--mut);font-size:12.5px}.wdL div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line)}.wdL div:last-child{border:0}';document.head.appendChild(st);
+function wdT(t){var e=document.createElement('div');e.textContent=t;e.onclick=function(){e.remove();go('devis')};e.style.cssText='position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:99999;background:#0a1f4d;color:#fff;padding:14px 16px;border-radius:14px;box-shadow:0 8px 24px #0006;font-weight:700;text-align:center;border-left:5px solid #f5b301';document.body.appendChild(e);setTimeout(function(){e.remove()},6000)}
+function can(){return ME&&ROLES[ME.role]&&ROLES[ME.role].indexOf('devis')>=0}
+function L(){return (S.webdevis||[]).slice().sort(function(a,b){return String(b.d).localeCompare(String(a.d))})}
+function news(){return L().filter(function(x){return x.st==='nouvelle'})}
+function when(d){var x=new Date(d);return x.toLocaleDateString('fr-FR')+' '+x.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+function pcs(x){return (x.items||[]).reduce(function(a,i){return a+(+i.q||0)},0)}
+function wan(t){var n=String(t||'').replace(/[^\d]/g,'');if(/^00/.test(n))n=n.slice(2);if(/^6\d{8}$/.test(n))n='224'+n;return n}
+function card(x){var nw=x.st==='nouvelle';return '<div class="item" onclick="wdOpen(\''+x.id+'\')"><div class="t"><b>'+esc(x.nom||'Client')+(nw?'<span class="wdNew">NOUVEAU</span>':'')+'</b><span>'+esc(x.num||'')+' · '+when(x.d)+'</span><span>📍 '+esc(x.lieu||'—')+' · '+(x.items||[]).length+' produit'+((x.items||[]).length>1?'s':'')+', '+pcs(x)+' pcs</span></div><span class="badge" style="'+(nw?'background:#f5b301;color:#0a1f4d':'')+'">'+(x.st==='traitee'?'✅ Traitée':nw?'🆕':'👁 Vue')+'</span></div>'}
+/* bloc dans la page Devis */
+var _rd=window.renderDevis;window.renderDevis=function(){_rd.apply(this,arguments);var t=$('t-devis');if(!t||!can())return;var A=L();if(!A.length)return;
+ var n=news().length,h=t.querySelector('.grid');var html='<div class="wdBox"><h3><span>🌐 Demandes du site'+(n?' <span class="wdNew">'+n+' nouvelle'+(n>1?'s':'')+'</span>':'')+'</span><small style="color:var(--mut);font-weight:600">'+A.length+'</small></h3>'+A.slice(0,window._wdAll?999:4).map(card).join('')+(A.length>4&&!window._wdAll?'<button class="btn ghost" style="width:100%;margin-top:6px" onclick="_wdAll=1;renderDevis()">Voir toutes les demandes ('+A.length+')</button>':'')+'</div>';
+ if(h)h.insertAdjacentHTML('afterend',html);else t.insertAdjacentHTML('afterbegin',html)};
+window.wdOpen=function(id){var x=(S.webdevis||[]).find(function(k){return String(k.id)===String(id)});if(!x)return;
+ if(x.st==='nouvelle'){x.st='vue';x.vu=ME?ME.nom:'';save();chip()}
+ var dl=x.dl?new Date(x.dl+'T12:00:00').toLocaleDateString('fr-FR'):'';
+ openSheet('<h2 style="margin-top:0">🌐 Demande '+esc(x.num||'')+'</h2>'+
+ '<div class="wdI"><div class="mu">Reçue le '+when(x.d)+' depuis le site</div><div class="nm">'+esc(x.nom)+'</div><div>📱 WhatsApp : <b>'+esc(x.tel)+'</b></div><div>📍 Livraison : <b>'+esc(x.lieu)+'</b></div>'+(dl?'<div>📅 Date souhaitée : <b>'+dl+'</b></div>':'')+(x.note?'<div>📝 '+esc(x.note)+'</div>':'')+'</div>'+
+ '<h2 style="margin:12px 0 6px">Produits demandés</h2><div class="wdL">'+(x.items||[]).map(function(i,k){return '<div><span>'+(k+1)+'. '+esc(i.nom)+'</span><b>× '+f(i.q)+'</b></div>'}).join('')+'<div><span><b>Total</b></span><b>'+pcs(x)+' pièces</b></div></div>'+
+ '<button class="btn gold" style="width:100%;margin-top:14px" onclick="wdDevis(\''+x.id+'\')">🧾 Préparer le devis avec les prix</button>'+
+ '<a class="btn" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none;background:#25d366;color:#fff" target="_blank" rel="noopener" href="https://wa.me/'+wan(x.tel)+'?text='+encodeURIComponent('Bonjour '+x.nom+', merci pour votre demande de devis '+(x.num||'')+' chez Alfa ETS~B. ')+'">💬 Répondre sur WhatsApp</a>'+
+ '<a class="btn ghost" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="tel:'+esc(String(x.tel).replace(/\s/g,''))+'">📞 Appeler</a>'+
+ (x.st!=='traitee'?'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="wdSt(\''+x.id+'\',\'traitee\')">✅ Marquer comme traitée</button>':'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="wdSt(\''+x.id+'\',\'vue\')">↩ Remettre en attente</button>')+
+ (ME&&ME.role==='Administrateur'?'<button class="btn ghost" style="width:100%;margin-top:8px;color:var(--bad)" onclick="wdDel(\''+x.id+'\')">🗑 Supprimer la demande</button>':'')+
+ '<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">Fermer</button>')};
+window.wdSt=function(id,v){var x=(S.webdevis||[]).find(function(k){return String(k.id)===String(id)});if(!x)return;x.st=v;if(v==='traitee'){x.tr=ME?ME.nom:'';x.trd=new Date().toISOString()}save();closeSheet();chip();if(cur==='devis')renderDevis()};
+window.wdDel=function(id){if(!confirm('Supprimer cette demande du site ?'))return;S.webdevis=(S.webdevis||[]).filter(function(k){return String(k.id)!==String(id)});save();closeSheet();chip();if(cur==='devis')renderDevis()};
+window.wdDevis=function(id){var x=(S.webdevis||[]).find(function(k){return String(k.id)===String(id)});if(!x)return;
+ var nk=function(t){return String(t||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]/g,'')};
+ var lines=(x.items||[]).map(function(i){var p=(S.produits||[]).find(function(p){return String(p.id)===String(i.ref)})||(S.produits||[]).find(function(p){return nk(p.nom)===nk(i.nom)});return p?{pid:p.id,q:+i.q||1,pu:Math.round(+p.pv||0)}:{pid:null,nom:i.nom,q:+i.q||1,pu:0,free:1}});
+ if(x.st==='nouvelle')x.st='vue';closeSheet();
+ window.dvFromWeb({client:x.nom,tel:x.tel,note:'Demande du site '+(x.num||'')+' · Livraison : '+x.lieu+(x.dl?' · Date souhaitée : '+new Date(x.dl+'T12:00:00').toLocaleDateString('fr-FR'):'')+(x.note?' · '+x.note:''),l:lines,web:x.id});
+ if(lines.some(function(l){return l.free}))setTimeout(function(){try{wdT('Indiquez les prix des articles à 0 GNF')}catch(e){}},400)};
+/* pastille + alerte */
+function chip(){var c=document.getElementById('wdChip'),n=can()?news().length:0;if(!n||cur==='devis'||!ME){if(c)c.remove();return}
+ if(!c){document.body.insertAdjacentHTML('beforeend','<button class="wdChip" id="wdChip" onclick="go(\'devis\')">🌐 Demande'+'s de devis du site <i></i></button>');c=document.getElementById('wdChip')}
+ c.innerHTML='🌐 '+(n>1?'Nouvelles demandes':'Nouvelle demande')+' de devis <i>'+n+'</i>'}
+var SEEN='alfa-wd-seen';function seen(){try{return JSON.parse(localStorage.getItem(SEEN)||'[]')}catch(e){return[]}}
+function check(){if(!ME||!can())return chip();var sn=seen(),nw=news().filter(function(x){return sn.indexOf(String(x.id))<0});
+ if(nw.length){var x=nw[0];try{wdT('🌐 Nouvelle demande de devis : '+x.nom+' ('+(x.items||[]).length+' produit'+((x.items||[]).length>1?'s':'')+')')}catch(e){}try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}
+  try{localStorage.setItem(SEEN,JSON.stringify(sn.concat(nw.map(function(k){return String(k.id)})).slice(-300)))}catch(e){}
+  if(cur==='devis'&&!document.getElementById('sheet').classList.contains('open'))renderDevis()}
+ chip()}
+var _go=go;go=function(){var r=_go.apply(this,arguments);chip();return r};
+setInterval(check,4000);setTimeout(check,1500);
+})();
+</script>
+<script id="alfa-v90-catalogue">
+/* v90 — publie le catalogue (sans prix ni stock) pour le site vitrine */
+(function(){
+var DEF={url:'https://alfa-etsb-default-rtdb.europe-west1.firebasedatabase.app',key:'AIzaSyDtgk-Oz4OI7qUGlCTyqEu4YN8iuGnqeZY',shop:'alfa-etsb'};
+var HK='alfa-cat-hash',TC={},busy=false,tm=null;
+function cfg(){var c=window.__sync&&__sync.cfg();return c&&c.url&&c.shop?c:null}
+function h(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36)}
+function thumb(src){if(!src)return Promise.resolve('');if(TC[src])return Promise.resolve(TC[src]);return new Promise(function(res){var im=new Image();im.onload=function(){try{var z=240,cv=document.createElement('canvas');cv.width=cv.height=z;var x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,z,z);var k=Math.max(z/im.width,z/im.height),w=im.width*k,hh=im.height*k;x.drawImage(im,(z-w)/2,(z-hh)/2,w,hh);TC[src]=cv.toDataURL('image/jpeg',.74);res(TC[src])}catch(e){res('')}};im.onerror=function(){res('')};im.src=src})}
+async function token(c){var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+(c.key||DEF.key),{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});var j=await r.json();if(!j.idToken)throw new Error('auth');return j.idToken}
+async function publish(force){var c=cfg();if(!c)return 'cfg';if(!ME||ME.role!=='Administrateur')return 'role';if(navigator.onLine===false)return 'off';if(busy)return 'busy';busy=true;
+ try{var L=(S.produits||[]).filter(function(p){return p&&p.nom&&!p.arch&&!p.hide}).slice().sort(function(a,b){return String(typeOf(a)).localeCompare(String(typeOf(b)))||a.nom.localeCompare(b.nom)});
+  var items=[];for(var i=0;i<L.length;i++){var p=L[i],src=typeof pImgA==='function'?pImgA(p):(p.img||'');items.push({id:String(p.id),nom:p.nom,fam:String(typeOf(p)||'Autres'),ref:p.ref||'',img:await thumb(src)})}
+  var sig=h(JSON.stringify(items));if(!force&&localStorage.getItem(HK)===sig)return 'same';
+  var t=await token(c),r=await fetch(c.url.replace(/\/+$/,'')+'/shops/'+encodeURIComponent(c.shop)+'/catalog.json?auth='+encodeURIComponent(t),{method:'PUT',body:JSON.stringify({u:Date.now(),n:items.length,items:items})});
+  if(r.ok){try{localStorage.setItem(HK,sig)}catch(e){}window.__catN=items.length;return 'ok'}return r.status===401||r.status===403?'rules':'err'}
+ catch(e){return String(e.message)==='auth'?'auth':'err'}finally{busy=false}}
+window.catPublish=publish;
+window.catSend=async function(){var b=document.getElementById('catBtn');if(b){b.disabled=true;b.textContent='⏳ Envoi du catalogue…'}
+ var r=await publish(true),M={ok:'✅ Catalogue envoyé au site : '+(window.__catN||0)+' produits. Ouvrez alfaetsb.com pour vérifier.',cfg:'La synchronisation n’est pas configurée sur ce téléphone.',role:'Seul le profil Administrateur peut envoyer le catalogue.',off:'Pas de connexion internet.',busy:'Un envoi est déjà en cours, réessayez dans quelques secondes.',rules:'Accès refusé par Firebase : corrigez les règles de la base (Realtime Database › Règles).',auth:'Connexion refusée par Firebase : activez « Anonyme » dans Authentication › Sign-in method.',err:'Échec de l’envoi. Vérifiez la connexion et réessayez.'};
+ alert(M[r]||M.err);if(b){b.disabled=false;b.textContent='🌐 Envoyer le catalogue au site'}};
+var _ss=window.syncSheet;window.syncSheet=function(){_ss.apply(this,arguments);if(!ME||ME.role!=='Administrateur')return;var sb=document.getElementById('sheetBody');if(!sb)return;var k=sb.querySelector('.k');var h='<button class="btn" id="catBtn" style="width:100%;margin:0 0 8px;background:#12924f;color:#fff" onclick="catSend()">🌐 Envoyer le catalogue au site</button>';if(k)k.insertAdjacentHTML('afterend',h);else sb.insertAdjacentHTML('afterbegin',h)};
+var _s=save;save=function(){var r=_s.apply(this,arguments);clearTimeout(tm);tm=setTimeout(publish,8000);return r};
+setTimeout(publish,6000);setInterval(publish,300000);
+})();
+</script>
+<script id="alfa-v91-devispdf">
+/* v91 — devis en PDF : télécharger et envoyer sur WhatsApp */
+(function(){
+var LIBS=['pdf-lib.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'];
+function lib(){return new Promise(function(res,rej){if(window.PDFLib)return res(window.PDFLib);var i=0;(function nx(){if(i>=LIBS.length)return rej(new Error('lib'));var sc=document.createElement('script');sc.src=LIBS[i++];sc.onload=function(){window.PDFLib?res(window.PDFLib):nx()};sc.onerror=function(){sc.remove();nx()};document.head.appendChild(sc)})()})}
+var CP='€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+function T(t){t=String(t==null?'':t).replace(/[   ]/g,' ').replace(/−/g,'-').replace(/≈/g,'~');var o='';for(var k=0;k<t.length;k++){var c=t[k],n=c.charCodeAt(0);if((n>=32&&n<127)||(n>=160&&n<=255)||CP.indexOf(c)>=0)o+=c;else if(n>=0xD800&&n<=0xDBFF)k++}return o.replace(/\s+/g,' ').trim()}
+function M(n){return T(f(Math.round(n||0)))+' GNF'}
+function dt(d){return new Date(d).toLocaleDateString('fr-FR')}
+function src(l){var A=dvApi,p=A.P0(l.pid);return p?(typeof pImgA==='function'?pImgA(p):(p.img||'')):''}
+function jpg(sr){if(!sr)return Promise.resolve('');return new Promise(function(res){var im=new Image();im.onload=function(){try{var z=220,cv=document.createElement('canvas');cv.width=cv.height=z;var x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,z,z);var k=Math.max(z/im.width,z/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(z-w)/2,(z-h)/2,w,h);res(cv.toDataURL('image/jpeg',.82))}catch(e){res('')}};im.onerror=function(){res('')};im.src=sr})}
+async function build(id){var A=dvApi,x=S.devis.find(function(k){return k.id===id});if(!x)throw new Error('Devis introuvable');var L=await lib();
+ var doc=await L.PDFDocument.create();doc.setTitle(T('Devis '+A.num(x)+' - '+(x.client||'')));
+ var F=await doc.embedFont(L.StandardFonts.Helvetica),FB=await doc.embedFont(L.StandardFonts.HelveticaBold);
+ var C=function(h){return L.rgb(parseInt(h.substr(1,2),16)/255,parseInt(h.substr(3,2),16)/255,parseInt(h.substr(5,2),16)/255)};
+ var NAVY=C('#0a1f4d'),BLUE=C('#145bd7'),GOLD=C('#f5b301'),INK=C('#0f1c3a'),MUT=C('#5b6980'),LINE=C('#e2e9f3'),SOFT=C('#f4f7fb'),WHITE=C('#ffffff'),RED=C('#c62828');
+ var W=419.53,H=595.28,MX=28,page,y;
+ function tw(s,z,fn){return (fn||F).widthOfTextAtSize(T(s),z)}
+ function fit(s,z,fn,w){s=T(s);if(tw(s,z,fn)<=w)return s;while(s.length>1&&tw(s+'…',z,fn)>w)s=s.slice(0,-1);return s+'…'}
+ function tx(s,xx,yy,o){o=o||{};var z=o.s||9,fn=o.b?FB:F,q=T(s);if(o.w)q=fit(q,z,fn,o.w);var px=o.r?xx-tw(q,z,fn):o.c?xx-tw(q,z,fn)/2:xx;page.drawText(q,{x:px,y:yy,size:z,font:fn,color:o.col||INK})}
+ function np(){page=doc.addPage([W,H]);y=H-40}
+ np();
+ page.drawRectangle({x:0,y:H-92,width:W,height:92,color:NAVY});page.drawRectangle({x:0,y:H-95,width:W,height:3,color:GOLD});
+ tx(S.nom||'Alfa ETS~B',MX,H-42,{s:18,b:true,col:WHITE});tx('Inox • Aluminium • Accessoires',MX,H-58,{s:8,col:C('#c9d7f3')});tx('Conakry, Guinée — alfaetsb.com',MX,H-70,{s:8,col:C('#c9d7f3')});
+ tx('DEVIS',W-MX,H-40,{s:18,b:true,col:GOLD,r:1});tx('N° '+A.num(x),W-MX,H-56,{s:9,b:true,col:WHITE,r:1});tx('Date : '+dt(x.d),W-MX,H-69,{s:8,col:C('#c9d7f3'),r:1});tx('Valable jusqu’au '+dt(A.valid(x)),W-MX,H-80,{s:8,col:GOLD,r:1});
+ y=H-112;page.drawRectangle({x:MX,y:y-44,width:W-2*MX,height:48,color:SOFT,borderColor:LINE,borderWidth:.8});
+ tx('CLIENT',MX+10,y-8,{s:7,b:true,col:MUT});tx(x.client||'',MX+10,y-22,{s:12,b:true,w:200});if(x.tel)tx('Tél. '+x.tel,MX+10,y-35,{s:8,col:MUT,w:200});
+ var hasB=(S.boutiques||[]).length;tx(hasB?'BOUTIQUE':'ÉTABLI PAR',W-MX-10,y-8,{s:7,b:true,col:MUT,r:1});tx(hasB?A.shopNm(x.bid):(x.u||''),W-MX-10,y-22,{s:10,b:true,r:1,w:150});if(hasB&&x.u)tx('Établi par '+x.u,W-MX-10,y-35,{s:8,col:MUT,r:1,w:150});
+ y-=62;
+ var g=x.l,IM=[];for(var i=0;i<g.length;i++){IM.push(null);try{var d=await jpg(src(g[i]));if(d)IM[i]=await doc.embedJpg(d)}catch(e){}}
+ var HI=IM.some(function(k){return k}),NL=g.length,RH=HI?(NL<=8?50:NL<=20?40:32):18,IW=HI?(NL<=8?44:NL<=20?34:26):0,FS=NL>20?8:8.5;
+ var cols=[['Désignation',197.5],['Qté',32,1],['P.U.',62,1],['Montant',72,1]],xs=[],cx=MX;cols.forEach(function(c){xs.push(cx);cx+=c[1]});
+ function head(){page.drawRectangle({x:MX,y:y-14,width:W-2*MX,height:18,color:NAVY});cols.forEach(function(c,i){tx(c[0],c[2]?xs[i]+c[1]-6:xs[i]+6,y-8,{s:8,b:true,col:WHITE,r:c[2]})});y-=18}
+ head();g.forEach(function(l,i){if(y<58+RH){np();tx('Devis '+A.num(x)+' — suite',MX,y,{s:8,b:true,col:MUT});y-=14;head()}var top=y+4,mid=top-RH/2-3,p=A.P0(l.pid),nm=T(p?p.nom:(l.nom||'Produit'));
+  if(i%2)page.drawRectangle({x:MX,y:top-RH,width:W-2*MX,height:RH,color:SOFT});
+  if(HI){if(IM[i])page.drawImage(IM[i],{x:xs[0]+5,y:top-RH+3,width:IW,height:IW});else page.drawRectangle({x:xs[0]+5,y:top-RH+3,width:IW,height:IW,color:C('#e8edf4')})}
+  var nx=xs[0]+6+(HI?IW+8:0),nw=cols[0][1]-10-(HI?IW+8:0);
+  if(HI&&tw(nm,FS)>nw){var wd=nm.split(' '),a='';while(wd.length&&tw((a?a+' ':'')+wd[0],FS)<=nw)a+=(a?' ':'')+wd.shift();if(!a)a=wd.shift();tx(a,nx,mid+5,{s:FS,w:nw});tx(wd.join(' '),nx,mid-6,{s:FS,w:nw})}else tx(nm,nx,mid,{s:FS,w:nw});
+  tx(f(l.q),xs[1]+cols[1][1]-6,mid,{s:FS,r:1});tx(f(l.pu),xs[2]+cols[2][1]-6,mid,{s:FS,r:1});tx(f(l.q*l.pu),xs[3]+cols[3][1]-6,mid,{s:FS,b:true,r:1});y-=RH});
+ page.drawLine({start:{x:MX,y:y+4},end:{x:W-MX,y:y+4},thickness:1,color:NAVY});y-=8;
+ if(y<150)np();
+ var sb=A.sub(x),tt=A.tot(x),rm=sb-tt,bx=W-MX-190,pcs=g.reduce(function(a,l){return a+(+l.q||0)},0);
+ tx(NL+(NL>1?' articles':' article')+' · '+T(f(pcs))+(pcs>1?' pièces':' pièce'),MX,y,{s:8.5,b:true,col:MUT});
+ if(rm>0){tx('Sous-total',bx,y,{s:9});tx(M(sb),W-MX,y,{s:9,r:1});y-=15;tx('Remise '+T(f(x.rem||0))+' %',bx,y,{s:9,col:RED});tx('- '+M(rm),W-MX,y,{s:9,col:RED,r:1});y-=18}
+ page.drawRectangle({x:bx-8,y:y-8,width:W-MX-bx+8,height:24,color:NAVY});tx('TOTAL',bx,y,{s:11,b:true,col:WHITE});tx(M(tt),W-MX-6,y,{s:12,b:true,col:GOLD,r:1});y-=34;
+ if(x.note){if(y<100)np();var nl=[],wds=T(x.note).split(' '),ln='';wds.forEach(function(w){if(tw(ln+' '+w,8.5)>W-2*MX-20){nl.push(ln);ln=w}else ln=ln?ln+' '+w:w});if(ln)nl.push(ln);nl=nl.slice(0,6);
+  var hh=20+nl.length*12;page.drawRectangle({x:MX,y:y-hh+8,width:W-2*MX,height:hh,color:C('#fff8e6'),borderColor:C('#f3dfa6'),borderWidth:.8});tx('CONDITIONS',MX+10,y-4,{s:7.5,b:true,col:C('#8a6a10')});nl.forEach(function(t,k){tx(t,MX+10,y-17-k*12,{s:8.5})});y-=hh+8}
+ if(y<90)np();tx('Prix en francs guinéens (GNF). Devis valable jusqu’au '+dt(A.valid(x))+'.',MX,y,{s:8,col:MUT});y-=12;tx('Pour confirmer votre commande, répondez simplement à ce message sur WhatsApp.',MX,y,{s:8,col:MUT});
+ page.drawLine({start:{x:MX,y:62},end:{x:W-MX,y:62},thickness:.6,color:LINE});tx('Merci pour votre confiance !',W/2,48,{s:9,b:true,col:NAVY,c:1});tx((S.nom||'Alfa ETS~B')+' · Conakry, Guinée · alfaetsb.com',W/2,34,{s:7.5,col:MUT,c:1});
+ var PG=doc.getPages();if(PG.length>1)PG.forEach(function(pp,k){page=pp;tx('Page '+(k+1)+'/'+PG.length+' · Devis '+A.num(x),W-MX,20,{s:7,col:MUT,r:1});if(k<PG.length-1)tx('Suite à la page suivante >',W/2,30,{s:8,b:true,col:BLUE,c:1})});
+ var name='Devis_'+T(A.num(x)).replace(/[^\w-]+/g,'_')+'_'+T(x.client||'client').replace(/[^\w]+/g,'_')+'.pdf';
+ return {bytes:await doc.save(),name:name,x:x}}
+window.dvPdfBuild=build;
+function wait(t){openSheet('<div style="text-align:center;padding:30px 10px"><div style="font-size:42px">⏳</div><b>'+t+'</b></div>')}
+function fail(e){closeSheet();alert(e&&e.message==='lib'?'Impossible de charger le module PDF. Vérifiez la connexion internet.':'Erreur : '+(e&&e.message||e))}
+window.dvPdfDl=async function(id){wait('Préparation du devis PDF…');try{var r=await build(id);pdfOut(r.name,new Blob([r.bytes],{type:'application/pdf'}))}catch(e){fail(e)}};
+window.dvPdfWa=async function(id){wait('Préparation du devis PDF…');var r;try{r=await build(id)}catch(e){return fail(e)}
+ var A=dvApi,x=r.x,blob=new Blob([r.bytes],{type:'application/pdf'}),u=URL.createObjectURL(blob),file=null;try{file=new File([blob],r.name,{type:'application/pdf'})}catch(e){}
+ var n=A.waNum(x.tel),msg='Bonjour '+(x.client||'')+', voici votre devis '+A.num(x)+' de '+(S.nom||'Alfa ETS~B')+' : total '+G(A.tot(x))+', valable jusqu’au '+dt(A.valid(x))+'. Merci pour votre confiance !';
+ var canSh=!!(file&&navigator.canShare&&navigator.canShare({files:[file]}));
+ window.__dvSh=async function(){if(!x.sent){x.sent=new Date().toISOString();save()}try{logA('Devis PDF envoyé — '+A.num(x)+' · '+x.client)}catch(e){}
+  if(canSh){try{await navigator.share({files:[file],title:'Devis '+A.num(x),text:msg});return}catch(e){if(e&&e.name==='AbortError')return}}
+  var a=document.createElement('a');a.href=u;a.download=r.name;document.body.appendChild(a);a.click();a.remove();
+  window.open('https://wa.me/'+(n||'')+'?text='+encodeURIComponent(msg+'\n\n📎 '+r.name),'_blank');
+  setTimeout(function(){alert('Le devis PDF a été téléchargé. Dans WhatsApp, touchez 📎 puis « Document » pour le joindre.')},500)};
+ openSheet('<div style="text-align:center"><div style="font-size:46px;line-height:1">📄</div><div style="margin:8px 0 2px;font-size:20px;font-weight:800">Devis PDF prêt</div><p style="color:var(--mut);margin:0 0 4px;font-size:13px;word-break:break-all">'+esc(r.name)+' · '+Math.max(1,Math.round(blob.size/1024))+' Ko</p><p style="margin:0 0 14px"><b>'+esc(x.client||'')+'</b>'+(x.tel?' · '+esc(x.tel):'')+' · <b>'+G(A.tot(x))+'</b></p></div>'+
+ '<button class="btn" style="width:100%;background:#25d366;color:#fff" onclick="__dvSh()">💬 Envoyer sur WhatsApp</button>'+
+ '<a class="btn ghost" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="'+u+'" download="'+esc(r.name)+'">⬇ Télécharger le PDF</a>'+
+ '<a class="btn ghost" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="'+u+'" target="_blank" rel="noopener">👁 Voir le PDF</a>'+
+ '<button class="btn ghost" style="width:100%;margin-top:8px" onclick="dvOpen('+id+')">‹ Retour au devis</button>'+
+ '<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">'+(canSh?'Choisissez WhatsApp puis le contact '+(x.tel?'('+esc(x.tel)+')':'')+'.':'Le PDF sera téléchargé et WhatsApp s’ouvrira : joignez-le avec 📎 › Document.')+'</p>')};
 })();
 </script>
 <script id="alfa-v81-lockfix">
