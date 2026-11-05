@@ -376,8 +376,9 @@ window.qStep=function(){if(QS===2)return qSend();var L=qIds();if(!L.length)retur
  document.getElementById('qsend').disabled=false;document.getElementById('ql').scrollTop=0};
 window.qBack=function(){qMode(1);qDraw()};
 /* jeton Firebase anonyme (préparé à l'avance pour un envoi instantané) */
-function tok(){try{var t=JSON.parse(localStorage.getItem('alfaTok')||'null');if(t&&t.exp>Date.now()+120000)return Promise.resolve(t.id)}catch(e){}
- return fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'}).then(function(r){return r.json()}).then(function(j){if(!j.idToken)return '';try{localStorage.setItem('alfaTok',JSON.stringify({id:j.idToken,exp:Date.now()+(+j.expiresIn||3600)*1000}))}catch(e){}return j.idToken}).catch(function(){return ''})}
+function tok(){var t=null;try{t=JSON.parse(localStorage.getItem('alfaTok')||'null');if(t&&t.exp>Date.now()+120000)return Promise.resolve(t.id)}catch(e){}
+ if(t&&t.ref)return fetch('https://securetoken.googleapis.com/v1/token?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(t.ref)}).then(function(r){return r.json()}).then(function(j){if(!j.id_token)throw 0;try{localStorage.setItem('alfaTok',JSON.stringify({id:j.id_token,ref:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000}))}catch(e){}return j.id_token}).catch(function(){try{localStorage.removeItem('alfaTok')}catch(e){}return tok()});
+ return fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+FB.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'}).then(function(r){return r.json()}).then(function(j){if(!j.idToken)return '';try{localStorage.setItem('alfaTok',JSON.stringify({id:j.idToken,ref:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000}))}catch(e){}return j.idToken}).catch(function(){return ''})}
 function pend(){try{return JSON.parse(localStorage.getItem('alfaPend')||'[]')||[]}catch(e){return[]}}
 function setPend(a){try{localStorage.setItem('alfaPend',JSON.stringify(a))}catch(e){}}
 function push(rec){return tok().then(function(t){if(!t)throw 0;var b={};b['webdevis~'+rec.id]={c:'webdevis',i:String(rec.id),d:rec,_u:{'.sv':'timestamp'}};

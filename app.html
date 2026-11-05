@@ -1486,7 +1486,7 @@ try{const h=document.getElementById('whoBtn');if(h)h.insertAdjacentHTML('beforeb
 badge();
 try{setInterval(()=>{if(typeof document==='undefined'||document.visibilityState!=='hidden')tick()},12000);window.addEventListener('online',()=>sched(300));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sched(300)})}catch(e){}
 sched(2500);
-window.__sync={scan,flush,pull,tick,cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
+window.__sync={scan,flush,pull,tick,token,cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
 })();
 /* ===== v36 : dépôts bancaires (initiés par le comptable, validés par l'administrateur) + registre des banques ===== */
 (function(){
@@ -3915,7 +3915,8 @@ var HK='alfa-cat-hash',TC={},busy=false,tm=null;
 function cfg(){var c=window.__sync&&__sync.cfg();return c&&c.url&&c.shop?c:null}
 function h(s){var x=5381;for(var i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))|0;return (x>>>0).toString(36)}
 function thumb(src){if(!src)return Promise.resolve('');if(TC[src])return Promise.resolve(TC[src]);return new Promise(function(res){var im=new Image();im.onload=function(){try{var z=240,cv=document.createElement('canvas');cv.width=cv.height=z;var x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,z,z);var k=Math.max(z/im.width,z/im.height),w=im.width*k,hh=im.height*k;x.drawImage(im,(z-w)/2,(z-hh)/2,w,hh);TC[src]=cv.toDataURL('image/jpeg',.74);res(TC[src])}catch(e){res('')}};im.onerror=function(){res('')};im.src=src})}
-async function token(c){var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+(c.key||DEF.key),{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});var j=await r.json();if(!j.idToken)throw new Error('auth');return j.idToken}
+var LASTERR='';async function token(c){try{if(window.__sync&&__sync.token){var t=await __sync.token();if(t)return t}}catch(e){LASTERR=String(e.message||e)}
+ var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+(c.key||DEF.key),{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});var j=await r.json();if(!j.idToken){LASTERR=(j.error&&j.error.message)||LASTERR;throw new Error('auth')}return j.idToken}
 async function publish(force){var c=cfg();if(!c)return 'cfg';if(!ME||ME.role!=='Administrateur')return 'role';if(navigator.onLine===false)return 'off';if(busy)return 'busy';busy=true;
  try{var L=(S.produits||[]).filter(function(p){return p&&p.nom&&!p.arch&&!p.hide}).slice().sort(function(a,b){return String(typeOf(a)).localeCompare(String(typeOf(b)))||a.nom.localeCompare(b.nom)});
   var items=[];for(var i=0;i<L.length;i++){var p=L[i],src=typeof pImgA==='function'?pImgA(p):(p.img||'');items.push({id:String(p.id),nom:p.nom,fam:String(typeOf(p)||'Autres'),ref:p.ref||'',img:await thumb(src)})}
@@ -3925,7 +3926,7 @@ async function publish(force){var c=cfg();if(!c)return 'cfg';if(!ME||ME.role!=='
  catch(e){return String(e.message)==='auth'?'auth':'err'}finally{busy=false}}
 window.catPublish=publish;
 window.catSend=async function(){var b=document.getElementById('catBtn');if(b){b.disabled=true;b.textContent='⏳ Envoi du catalogue…'}
- var r=await publish(true),M={ok:'✅ Catalogue envoyé au site : '+(window.__catN||0)+' produits. Ouvrez alfaetsb.com pour vérifier.',cfg:'La synchronisation n’est pas configurée sur ce téléphone.',role:'Seul le profil Administrateur peut envoyer le catalogue.',off:'Pas de connexion internet.',busy:'Un envoi est déjà en cours, réessayez dans quelques secondes.',rules:'Accès refusé par Firebase : corrigez les règles de la base (Realtime Database › Règles).',auth:'Connexion refusée par Firebase : activez « Anonyme » dans Authentication › Sign-in method.',err:'Échec de l’envoi. Vérifiez la connexion et réessayez.'};
+ var r=await publish(true),M={ok:'✅ Catalogue envoyé au site : '+(window.__catN||0)+' produits. Ouvrez alfaetsb.com pour vérifier.',cfg:'La synchronisation n’est pas configurée sur ce téléphone.',role:'Seul le profil Administrateur peut envoyer le catalogue.',off:'Pas de connexion internet.',busy:'Un envoi est déjà en cours, réessayez dans quelques secondes.',rules:'Accès refusé par Firebase : corrigez les règles de la base (Realtime Database › Règles).',auth:'Connexion refusée par Firebase'+(LASTERR?' ('+LASTERR+')':'')+'. Vérifiez « Anonyme » dans Authentication › Sign-in method.',err:'Échec de l’envoi. Vérifiez la connexion et réessayez.'};
  alert(M[r]||M.err);if(b){b.disabled=false;b.textContent='🌐 Envoyer le catalogue au site'}};
 var _ss=window.syncSheet;window.syncSheet=function(){_ss.apply(this,arguments);if(!ME||ME.role!=='Administrateur')return;var sb=document.getElementById('sheetBody');if(!sb)return;var k=sb.querySelector('.k');var h='<button class="btn" id="catBtn" style="width:100%;margin:0 0 8px;background:#12924f;color:#fff" onclick="catSend()">🌐 Envoyer le catalogue au site</button>';if(k)k.insertAdjacentHTML('afterend',h);else sb.insertAdjacentHTML('afterbegin',h)};
 var _s=save;save=function(){var r=_s.apply(this,arguments);clearTimeout(tm);tm=setTimeout(publish,8000);return r};
