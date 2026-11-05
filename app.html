@@ -1323,7 +1323,7 @@ const _wi=wfItem;wfItem=function(g,r){const v=g[0];
 })();
 /* ===== v34 : synchronisation multi-téléphones (Firebase Realtime Database) ===== */
 (function(){
-const CK='alfa-sync-cfg',QK='alfa-sync-q',SK='alfa-sync-snap',PK='alfa-sync-pull',AK='alfa-sync-auth';
+const CK='alfa-sync-cfg',QK='alfa-sync-q',SK='alfa-sync-snap',PK='alfa-sync-pull',AK='alfa-sync-auth2',PWK='alfa-sync-pw',SYNC_EMAIL='sync@alfaetsb.com';
 const ld=k=>{try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
 let cfg=ld(CK)||{},Q=ld(QK)||{recs:{},fl:{}},snap=ld(SK)||{},lastPull=+(localStorage.getItem(PK)||0),auth=ld(AK),busy=false,lastOk=0,err='',needRender=false,timer=null,tm=null,again=false;
 const clone=o=>o===undefined?undefined:JSON.parse(JSON.stringify(o));
@@ -1359,12 +1359,24 @@ function scan(){const b=curB;if(b)swapOut();let n=0;try{const C=colls(),seen={};
  if(n)persist();return n}
 const pendingCount=()=>Object.keys(Q.recs).length+Object.keys(Q.fl||{}).length;
 // ---- réseau ----
-async function token(){if(!cfg.key)return'';
+/* v81 — connexion sécurisée : compte e-mail/mot de passe Firebase (plus de connexion anonyme) */
+function askPw(msg){if(document.getElementById('syPw'))return;
+ var o=document.createElement('div');o.id='syPw';o.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(5,17,40,.7);display:flex;align-items:center;justify-content:center;padding:16px';
+ o.innerHTML='<div style="background:#fff;color:#102044;border-radius:20px;padding:22px;max-width:420px;width:100%;font:15px/1.5 system-ui,sans-serif"><div style="font:800 19px system-ui,sans-serif;margin-bottom:8px">🔐 Mot de passe de synchronisation</div><p style="margin:0 0 12px;color:#55627a">Entrez le mot de passe de synchronisation donné par l’administrateur. Il n’est demandé qu’une fois sur ce téléphone.</p>'+(msg?'<p style="margin:0 0 10px;color:#c0392b;font-weight:600">'+msg+'</p>':'')+'<input id="syPwI" type="password" autocomplete="off" placeholder="Mot de passe" style="width:100%;box-sizing:border-box;padding:13px;border:1.5px solid #c9d6e6;border-radius:12px;font-size:16px;margin-bottom:10px"><button id="syPwOk" style="width:100%;border:0;border-radius:12px;padding:13px;background:#145bd7;color:#fff;font:700 15px system-ui,sans-serif;margin-bottom:6px">Valider</button><button id="syPwNo" style="width:100%;border:0;background:none;color:#55627a;font:600 14px system-ui,sans-serif;padding:8px">Plus tard</button></div>';
+ document.body.appendChild(o);
+ var close=function(){o.remove()};
+ document.getElementById('syPwNo').onclick=close;
+ var ok=function(){var v=(document.getElementById('syPwI').value||'').trim();if(!v)return;try{localStorage.setItem(PWK,v)}catch(e){}auth=null;sv(AK,null);err='';close();sched(300)};
+ document.getElementById('syPwOk').onclick=ok;document.getElementById('syPwI').onkeydown=function(e){if(e.key==='Enter')ok()};
+ setTimeout(function(){try{document.getElementById('syPwI').focus()}catch(e){}},100)}
+async function token(k){const key=k||cfg.key;if(!key)return'';
  if(auth&&auth.exp>Date.now()+60000)return auth.id;
  let r,j;
- if(auth&&auth.ref){r=await fetch('https://securetoken.googleapis.com/v1/token?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.ref)});j=await r.json();if(j.id_token){auth={id:j.id_token,ref:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000};sv(AK,auth);return auth.id}}
- r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});j=await r.json();
- if(!j.idToken)throw new Error('Connexion refusée par Firebase (clé API ou connexion anonyme non activée).');
+ if(auth&&auth.ref){r=await fetch('https://securetoken.googleapis.com/v1/token?key='+key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.ref)});j=await r.json();if(j.id_token){auth={id:j.id_token,ref:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000};sv(AK,auth);return auth.id}}
+ let pw='';try{pw=localStorage.getItem(PWK)||''}catch(e){}
+ if(!pw){askPw();throw new Error('Mot de passe de synchronisation requis.')}
+ r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+key,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:SYNC_EMAIL,password:pw,returnSecureToken:true})});j=await r.json();
+ if(!j.idToken){var m=(j.error&&j.error.message)||'';if(/INVALID_PASSWORD|INVALID_LOGIN|EMAIL_NOT_FOUND/.test(m)){try{localStorage.removeItem(PWK)}catch(e){}askPw('Mot de passe incorrect.');throw new Error('Mot de passe de synchronisation incorrect.')}throw new Error('Connexion refusée par Firebase ('+(m||'erreur')+').')}
  auth={id:j.idToken,ref:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000};sv(AK,auth);return auth.id}
 async function api(path,opt,qs){const t=await token(),base=cfg.url.replace(/\/+$/,'')+'/shops/'+encodeURIComponent(cfg.shop)+'/'+path+'.json?'+(qs?qs+'&':'')+(t?'auth='+encodeURIComponent(t):'');
  const r=await fetch(base,opt||{});if(!r.ok)throw new Error('Serveur : erreur '+r.status+(r.status===401||r.status===403?' (règles de sécurité Firebase)':''));return r.json()}
@@ -1438,7 +1450,7 @@ window.syncSheet=function(){const adm=ME&&ME.role==='Administrateur',n=pendingCo
    '<button class="btn" style="width:100%;margin-top:10px" onclick="syncSaveCfg()">Enregistrer la configuration</button>'+
    (configured()?'<h2>Initialisation</h2><button class="btn" style="width:100%" onclick="syncInit(\'push\')">⬆ Premier téléphone : envoyer mes données au cloud</button><button class="btn ghost" style="width:100%;margin-top:8px" onclick="syncInit(\'join\')">⬇ Autre téléphone : récupérer les données du cloud</button><button class="btn ghost" style="width:100%;margin-top:8px" onclick="syncShareCode()">📤 Partager le code de connexion</button>':'')+
    '<label>Code de connexion reçu (autre téléphone)</label><input id="sy4" placeholder="Collez le code ici"><button class="btn ghost" style="width:100%;margin-top:8px" onclick="syncUseCode()">Utiliser ce code</button>':'<p style="color:var(--mut)">La configuration se fait avec le profil Administrateur.</p>')+
-  '<button class="btn ghost" style="width:100%;margin-top:12px" onclick="closeSheet()">Fermer</button>')};
+  '<button class="btn ghost" style="width:100%;margin-top:12px" onclick="window.__sync.askPw()">🔐 Mot de passe de synchronisation</button><button class="btn ghost" style="width:100%;margin-top:12px" onclick="closeSheet()">Fermer</button>')};
 window.syncSaveCfg=function(){var all=['sy0','sy1','sy2'].map(function(i){var e=$(i);return e?e.value:''}).join('\n'),mk=all.match(/apiKey["']?\s*:\s*["']([^"']+)["']/),mu=all.match(/databaseURL["']?\s*:\s*["']([^"']+)["']/),mp=all.match(/projectId["']?\s*:\s*["']([^"']+)["']/);
  if(mk)$('sy2').value=mk[1];if(mu)$('sy1').value=mu[1];if(mp&&!($('sy3').value||'').trim())$('sy3').value=mp[1];
  if(!mu&&/^AIza/.test(($('sy1').value||'').trim())&&!($('sy2').value||'').trim()){$('sy2').value=$('sy1').value;$('sy1').value=''}
@@ -1471,7 +1483,7 @@ try{const h=document.getElementById('whoBtn');if(h)h.insertAdjacentHTML('beforeb
 badge();
 try{setInterval(()=>{if(typeof document==='undefined'||document.visibilityState!=='hidden')tick()},12000);window.addEventListener('online',()=>sched(300));document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sched(300)})}catch(e){}
 sched(2500);
-window.__sync={scan,flush,pull,tick,cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
+window.__sync={askPw,token,scan,flush,pull,tick,cfg:()=>cfg,setCfg:c=>{cfg=c;sv(CK,c)},Q:()=>Q,snap:()=>snap,pending:pendingCount,setErr:e=>{err=e}};
 })();
 /* ===== v36 : dépôts bancaires (initiés par le comptable, validés par l'administrateur) + registre des banques ===== */
 (function(){
@@ -3362,7 +3374,7 @@ body.alfa.dk #mgLive{background:#1b2742!important}body.alfa.dk #mgLive.ok{backgr
 body.alfa.dk .thSw{background:#0f1829!important}body.alfa.dk .thSw button{color:#9aa8c0}body.alfa.dk .thSw button.on{background:#22304b!important;color:#fff!important}
 </style>
 
-<script>(function(){try{document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name=color-scheme]');if(!m){m=document.createElement('meta');m.name='color-scheme';document.head.appendChild(m)}m.content='light';document.title=document.title.replace(/\(v\d+\)/,'(v78)')}catch(e){}})();</script>
+<script>(function(){try{document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name=color-scheme]');if(!m){m=document.createElement('meta');m.name='color-scheme';document.head.appendChild(m)}m.content='light';document.title=document.title.replace(/\(v\d+\)/,'(v81)')}catch(e){}})();</script>
 <script>/* PWA : fonctionnement hors connexion quand l'app est en ligne (https) */
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').then(function(r){r.addEventListener('updatefound',function(){var w=r.installing;w&&w.addEventListener('statechange',function(){if(w.state==='installed'&&navigator.serviceWorker.controller){try{toast('Nouvelle version disponible — rouvrez l’application')}catch(e){}}})})}).catch(function(){})})}
 </script><script id="alfa-v80-autosync">
@@ -3379,7 +3391,7 @@ function hasLocalData(){try{return (S.ventes||[]).length>0||(S.users||[]).length
 function quiet(fn){var a=window.alert,d=window._dlg;window.alert=function(){};window._dlg=function(m,b,cb){cb()};
  return Promise.resolve().then(fn).finally(function(){setTimeout(function(){window.alert=a;window._dlg=d},4000)})}
 var running=false;
-async function token(){try{var r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+DEF.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});var j=await r.json();return j.idToken||''}catch(e){return null}}
+async function token(){try{return await window.__sync.token(DEF.key)}catch(e){return null}}
 async function go(){if(running||has(DONE))return;if(navigator.onLine===false)return;running=true;
  try{
   var t=await token();if(t===null){running=false;return}
