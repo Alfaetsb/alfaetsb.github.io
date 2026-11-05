@@ -1352,7 +1352,7 @@ function colls(){const C={};
  const cf={};Object.keys(S).forEach(k=>{const v=S[k];if(v===null||typeof v!=='object')cf[k]=v});C.cfg=new Map([['cfg',cf]]);return C}
 const empty=v=>v===undefined||v===null||(typeof v==='object'&&!Object.keys(v).length);
 const fieldsOf=o=>{const r={};Object.keys(o).forEach(f=>{if(!empty(o[f]))r[f]=sj(o[f])});return r};
-function mergeRec(a,b){if(!a)return b;if(b.del)return b;if(a.del)return b;
+function mergeRec(a,b){if(!a)return b;if(!b)return a;if(b.del)return b;if(a.del)return b;
  if(b.full)return b;
  if(a.full){const full=clone(a.full);Object.keys(b.fields||{}).forEach(f=>{if(b.fields[f]===null)delete full[f];else full[f]=b.fields[f]});Object.keys(b.inc||{}).forEach(f=>full[f]=(+full[f]||0)+b.inc[f]);return{c:a.c,i:a.i,full}}
  const r={c:a.c,i:a.i,fields:Object.assign({},a.fields,b.fields),inc:Object.assign({},a.inc)};Object.keys(b.inc||{}).forEach(f=>r.inc[f]=(r.inc[f]||0)+b.inc[f]);return r}
@@ -1375,10 +1375,14 @@ async function token(){if(!cfg.key)return'';
  let r,j;
  if(auth&&auth.ref){r=await fetch('https://securetoken.googleapis.com/v1/token?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.ref)});j=await r.json();if(j.id_token){auth={id:j.id_token,ref:j.refresh_token,exp:Date.now()+(+j.expires_in||3600)*1000};sv(AK,auth);return auth.id}}
  r=await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signUp?key='+cfg.key,{method:'POST',headers:{'Content-Type':'application/json'},body:'{"returnSecureToken":true}'});j=await r.json();
- if(!j.idToken)throw new Error('Connexion refusée par Firebase (clé API ou connexion anonyme non activée).');
+ if(!j.idToken)throw new Error('Connexion refusée par Firebase : activez « Anonyme » dans Authentication › Sign-in method'+(j.error&&j.error.message?' ('+j.error.message+')':'')+'.');
  auth={id:j.idToken,ref:j.refreshToken,exp:Date.now()+(+j.expiresIn||3600)*1000};sv(AK,auth);return auth.id}
 async function api(path,opt,qs){const t=await token(),base=cfg.url.replace(/\/+$/,'')+'/shops/'+encodeURIComponent(cfg.shop)+'/'+path+'.json?'+(qs?qs+'&':'')+(t?'auth='+encodeURIComponent(t):'');
- const r=await fetch(base,opt||{});if(!r.ok)throw new Error('Serveur : erreur '+r.status+(r.status===401||r.status===403?' (règles de sécurité Firebase)':''));return r.json()}
+ let r;try{r=await fetch(base,opt||{})}catch(e){throw new Error('Pas de connexion internet (ou Firebase injoignable).')}
+ if(!r.ok){let m='';try{m=((await r.json())||{}).error||''}catch(e){}
+  if(r.status===401||r.status===403)throw new Error('Accès refusé par Firebase (erreur '+r.status+') : les règles de la base sont expirées ou fermées. Ouvrez Firebase › Realtime Database › Règles.');
+  throw new Error('Serveur : erreur '+r.status+(m?' — '+m:''))}
+ return r.json()}
 function bodyOf(recs){const b={},U={'.sv':'timestamp'};
  Object.keys(recs).forEach(k=>{const r=recs[k];
   if(r.del){b[k]={c:r.c,i:r.i,x:1,_u:U};return}
@@ -1423,7 +1427,7 @@ function applyRemote(key,rec,notif){const c=rec.c,id=String(rec.i);if(!c)return 
  if(notif&&isNew&&c==='ventes'&&ME){if(ME.role==='Comptable'&&d.st==='nouvelle')notif.push('Nouvelle commande à valider');if(ME.role==='Livreur'&&d.st==='validee')notif.push('Nouvelle commande à livrer')}
  return true}
 async function pull(){if(!configured())return false;
- const data=await api('r',{},'orderBy='+encodeURIComponent('"_u"')+'&startAt='+lastPull);if(!data)return false;
+ let data;try{data=await api('r',{},'orderBy='+encodeURIComponent('"_u"')+'&startAt='+lastPull)}catch(e){if(!/400|index/i.test(String(e.message)))throw e;const all=await api('r',{})||{};data={};Object.keys(all).forEach(k=>{const x=all[k];if(x&&(x._u||0)>=lastPull)data[k]=x})}if(!data)return false;
  const keys=Object.keys(data).sort((a,b)=>(data[a]._u||0)-(data[b]._u||0));let ch=false,mx=lastPull;const notif=[];
  keys.forEach(k=>{const r=data[k];if(r&&r._u>mx)mx=r._u;if(r&&applyRemote(k,r,notif))ch=true});
  lastPull=mx;try{localStorage.setItem(PK,String(mx))}catch(e){}persist();
