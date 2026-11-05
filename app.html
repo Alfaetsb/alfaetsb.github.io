@@ -4131,6 +4131,38 @@ lock=function(){ME=null;document.getElementById('lk').style.display='flex';home(
 try{var L=document.getElementById('lk');if(!ME&&L&&getComputedStyle(L).display!=='none')home()}catch(e){}
 })();
 </script>
+<script id="alfa-v95-hbtns">
+/* v95 — boutons d'en-tête : style verre lumineux + nouvelles icônes */
+(function(){
+var st=document.createElement('style');st.textContent=
+'header .hbtn,header #hBell,header #bBtn,header #syncB,header #whoBtn{width:46px!important;height:46px!important;min-width:46px;padding:0!important;border-radius:15px!important;display:grid!important;place-items:center;background:linear-gradient(160deg,#173b85 0%,#0c2861 100%)!important;border:1.5px solid #2f86f0!important;box-shadow:0 0 14px #2f86f04d,inset 0 1px 0 #ffffff2e,inset 0 -6px 12px #0006!important;color:#fff!important;font-size:0!important;line-height:0;overflow:visible;position:relative}'+
+'header .hbtn:active{transform:scale(.94)}header .hbtn svg{display:block;pointer-events:none}'+
+'header #hBell i{width:11px!important;height:11px!important;top:5px!important;right:5px!important;background:radial-gradient(circle at 35% 35%,#ff7a7a,#e11d1d)!important;border:0!important;box-shadow:0 0 6px #ff3b3b99!important}'+
+'#syncB .n{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#f5b301;color:#0b1d45;font:800 11px/18px Inter,system-ui,sans-serif;text-align:center;box-shadow:0 2px 6px #0005}'+
+'header .hdv{display:inline-block;width:2px;height:34px;border-radius:2px;background:linear-gradient(#2f86f000,#2f86f0,#2f86f000);margin:0 4px;align-self:center}'+
+'html body header select#cur#cur{height:46px!important;min-width:112px!important;width:auto!important;border-radius:16px!important;padding:0 30px 0 44px!important;background:url("data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><g stroke="#a86a00" stroke-width="1"><ellipse cx="11" cy="24" rx="8" ry="3.2" fill="#f5b301"/><rect x="3" y="15" width="16" height="9" fill="#f5b301"/><ellipse cx="11" cy="15" rx="8" ry="3.2" fill="#ffd34d"/><ellipse cx="22" cy="20" rx="7" ry="2.8" fill="#f5b301"/><rect x="15" y="9" width="14" height="11" fill="#f5b301"/><ellipse cx="22" cy="9" rx="7" ry="2.8" fill="#ffd34d"/></g><path d="M5 19h12M5 22h12M16 13h12M16 16h12" stroke="#c98a00" stroke-width="1"/></svg>')+'") no-repeat 10px center/26px,url("data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>')+'") no-repeat right 9px center/16px,linear-gradient(160deg,#173b85,#0c2861)!important;border:1.5px solid #2f86f0!important;box-shadow:0 0 14px #2f86f04d,inset 0 1px 0 #ffffff2e!important;font:800 17px Inter,system-ui,sans-serif!important;-webkit-appearance:none;appearance:none;color:#fff!important}'+
+'html body header select#cur#cur option{color:#0b1d45;background:#fff}';
+document.head.appendChild(st);
+var BELL='<svg viewBox="0 0 24 24" width="25" height="25" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.6 1.8H4.4z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/><path d="M12 3.2V4.8"/></svg>',
+SHOP='<svg viewBox="0 0 32 32" width="30" height="30"><rect x="5" y="13" width="22" height="15" rx="1" fill="#e9eef5"/><rect x="5" y="26" width="22" height="2.5" fill="#8a96a8"/><path d="M4 7h24l2 6H2z" fill="#fff"/><path d="M4 7h4l-1.5 6H2zM12 7h4v6h-5.5zM20 7h4l2 6h-6.5z" fill="#1e7bf0"/><path d="M2 13h28v1.6a2.5 2.5 0 0 1-5 0 2.5 2.5 0 0 1-4.7 0 2.5 2.5 0 0 1-4.6 0 2.5 2.5 0 0 1-4.7 0 2.5 2.5 0 0 1-4.7 0A2.5 2.5 0 0 1 2 14.6z" fill="#1e7bf0"/><rect x="7.5" y="17.5" width="5" height="4.5" fill="#2aa4f4"/><rect x="13" y="17.5" width="3.5" height="4.5" fill="#f59e0b"/><rect x="19" y="17" width="5" height="9" fill="#8b4a2b"/><circle cx="22.8" cy="21.8" r=".6" fill="#f5d36b"/><rect x="7.5" y="23.2" width="9" height="1.8" fill="#9fc3f0"/></svg>',
+CLOUD='<path d="M8 23h15a5.5 5.5 0 0 0 .6-11A7.5 7.5 0 0 0 9.4 13 5 5 0 0 0 8 23z" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/>',
+OK='<path d="m17 21 4 4 8-9" fill="none" stroke="#22c55e" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>',
+WARN='<path d="M23.5 15 30 27h-13z" fill="#f59e0b" stroke="#0c2861" stroke-width="1.2" stroke-linejoin="round"/><path d="M23.5 19.2v3.6" stroke="#0c2861" stroke-width="2" stroke-linecap="round"/><circle cx="23.5" cy="25" r="1.1" fill="#0c2861"/>',
+USER='<svg viewBox="0 0 24 24" width="28" height="28" fill="#2f8cff"><circle cx="12" cy="7.8" r="4.6"/><path d="M3.2 21.2c.4-4.9 4.1-7.7 8.8-7.7s8.4 2.8 8.8 7.7z"/></svg>';
+function cloud(t){t=String(t||'');var ex='',n=(t.match(/\d+/)||[''])[0];
+ if(/✓/.test(t))ex=OK;else if(/⚠/.test(t))ex=WARN;
+ return '<svg viewBox="0 0 32 32" width="32" height="32">'+CLOUD+ex+'</svg>'+(n&&!/✓/.test(t)?'<span class="n">'+n+'</span>':'')}
+function fix(){var b;
+ if((b=document.getElementById('hBell'))&&!b.querySelector('svg[data-v95]')){var dot=b.querySelector('i');b.innerHTML=BELL.replace('<svg','<svg data-v95="1"');if(dot)b.appendChild(dot);else b.insertAdjacentHTML('beforeend','<i></i>')}
+ if((b=document.getElementById('bBtn'))&&!b.querySelector('svg'))b.innerHTML=SHOP;
+ if((b=document.getElementById('whoBtn'))&&!b.querySelector('svg')){b.title=b.textContent.replace('👤','').trim();b.innerHTML=USER}
+ if((b=document.getElementById('syncB'))){var t=b.getAttribute('data-raw');var raw=b.querySelector('svg')?t:b.textContent;if(!b.querySelector('svg')||raw!==t){b.setAttribute('data-raw',raw);b.innerHTML=cloud(raw)}}
+ var c=document.getElementById('cur');if(c&&!(c.previousElementSibling&&c.previousElementSibling.classList.contains('hdv')))c.insertAdjacentHTML('beforebegin','<span class="hdv"></span>')}
+var busy=false;function run(){if(busy)return;busy=true;try{fix()}catch(e){}busy=false}
+run();var hd=document.querySelector('header');if(hd)new MutationObserver(function(){run()}).observe(hd,{subtree:true,childList:true,characterData:true});
+setInterval(run,1500);
+})();
+</script>
 <script id="alfa-v81-lockfix">
 /* v81 — iPhone : l'écran de connexion masque complètement l'application (clavier ouvert) */
 (function(){
