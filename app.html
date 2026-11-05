@@ -614,6 +614,17 @@ function aiAnswer(q){const t=nrm(q),has=(...w)=>w.some(x=>t.includes(x)),now=new
 async function saveFile(name,blob){
  try{const d=window.claude&&claude.use?await claude.use('downloads'):null;if(d){try{await d.save({filename:name,data:blob})}catch(e){}return}}catch(e){}
  const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000)}
+/* v88 — sortie PDF fiable sur téléphone (Android, iPhone, appli installée) */
+window.pdfOut=function(name,blob){if(window.__pdfTest)return saveFile(name,blob);
+ var u=URL.createObjectURL(blob),kb=Math.max(1,Math.round(blob.size/1024)),file=null;try{file=new File([blob],name,{type:'application/pdf'})}catch(e){}
+ var canSh=!!(file&&navigator.canShare&&navigator.canShare({files:[file]}));
+ window.__pdfSh=function(){navigator.share({files:[file],title:name}).catch(function(){})};
+ openSheet('<div style="text-align:center"><div style="font-size:46px;line-height:1">📄</div><div style="margin:8px 0 2px;font-size:20px;font-weight:800">PDF prêt</div><p style="color:var(--mut);margin:0 0 14px;word-break:break-all;font-size:13px">'+name.replace(/[<>&]/g,'')+' · '+kb+' Ko</p></div>'+
+ '<a class="btn gold" style="width:100%;display:flex;justify-content:center;text-decoration:none" href="'+u+'" download="'+name.replace(/"/g,'')+'">⬇ Télécharger le PDF</a>'+
+ '<a class="btn" style="width:100%;margin-top:8px;display:flex;justify-content:center;text-decoration:none" href="'+u+'" target="_blank" rel="noopener">👁 Ouvrir le PDF</a>'+
+ (canSh?'<button class="btn ghost" style="width:100%;margin-top:8px" onclick="__pdfSh()">📤 Partager / Enregistrer dans Fichiers</button>':'')+
+ '<button class="btn ghost" style="width:100%;margin-top:8px" onclick="closeSheet()">Fermer</button>'+
+ '<p style="color:var(--mut);font-size:12px;text-align:center;margin-top:10px">Sur iPhone : « Ouvrir le PDF » puis le bouton Partager pour l’enregistrer.</p>')};
 /* ===== v3 : profils + PIN, journal d'activité, garde-fous ===== */
 const ROLES={Administrateur:['dash','stock','ventes','wf','achats','frais','dep','caisse','inv','reg','cli'],Vendeur:['ventes','stock','wf','cli','dep'],Comptable:['wf','dash','ventes','caisse','dep','cli'],Livreur:['lhome','wf','inv']};
 let ME=null;
@@ -3647,7 +3658,7 @@ window.rapDl=function(){openSheet('<h2 style="margin-top:0">⬇ Télécharger le
 window.rapPdf=async function(){var btn=document.querySelector('#sheetBody .btn.gold');if(btn){btn.disabled=true;btn.textContent='⏳ Préparation du PDF…'}
  try{var L=await loadLib()}catch(e){if(btn){btn.disabled=false;btn.textContent='📄 Rapport PDF'}alert('Impossible de charger le module PDF. Vérifiez la connexion internet et réessayez.');return}
  try{var bytes=await build(L);var d=rapGet(),name='Rapport_'+(S.nom||'Alfa_ETS_B').replace(/[^\w]+/g,'_')+'_'+(rapSh()==='all'?'Toutes_boutiques':rapSh()===''?'Principal':T(rapShName()).replace('Boutique : ',''))+'_'+T(d.lbl).replace(/[^\w]+/g,'_')+'.pdf';
-  saveFile(name,new Blob([bytes],{type:'application/pdf'}));closeSheet();try{toast('Rapport PDF téléchargé')}catch(e){}}
+  pdfOut(name,new Blob([bytes],{type:'application/pdf'}))}
  catch(e){console.error(e);alert('Erreur lors de la création du PDF : '+e.message);if(btn){btn.disabled=false;btn.textContent='📄 Rapport PDF'}}};
 async function build(L){
  var d=rapGet(),adm=!ME||ME.role==='Administrateur',c=d.c,p=d.p;
@@ -3813,7 +3824,7 @@ async function make(id){var g=bonLines(id);if(!g.length)throw new Error('Vente i
  return {bytes:await doc.save(),name:'Recu_'+num(v)+'_'+T(v.client||'client').replace(/[^\w]+/g,'_')+'.pdf',v:v,c:c,txt:receipt(g)}}
 function busy(b,t){var e=document.getElementById('rcAct');if(e)e.querySelectorAll('button').forEach(function(x){x.disabled=b});var m=document.getElementById('rcMsg');if(m)m.textContent=t||''}
 async function go2(id,fn){busy(true,'⏳ Préparation du reçu PDF…');try{var r=await make(id);await fn(r)}catch(e){alert(e.message==='lib'?'Impossible de charger le module PDF. Vérifiez la connexion internet.':'Erreur : '+e.message)}busy(false,'')}
-window.rcPdf=function(id){go2(id,function(r){saveFile(r.name,new Blob([r.bytes],{type:'application/pdf'}));try{toast('Reçu PDF téléchargé')}catch(e){}})};
+window.rcPdf=function(id){go2(id,function(r){pdfOut(r.name,new Blob([r.bytes],{type:'application/pdf'}))})};
 window.rcPrint=function(id){go2(id,function(r){var u=URL.createObjectURL(new Blob([r.bytes],{type:'application/pdf'})),mob=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
  if(mob){var w=window.open(u,'_blank');if(!w)saveFile(r.name,new Blob([r.bytes],{type:'application/pdf'}));return}
  var fr=document.createElement('iframe');fr.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';fr.src=u;document.body.appendChild(fr);fr.onload=function(){try{fr.contentWindow.focus();fr.contentWindow.print()}catch(e){window.open(u,'_blank')}setTimeout(function(){fr.remove()},60000)}})};
