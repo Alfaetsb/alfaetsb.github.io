@@ -3074,7 +3074,7 @@ function row(it,bg){var out=/changer d.utilisateur/i.test(it.lab);return '<butto
 (function(){
 var K='alfaTheme',mq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
 function get(){try{return localStorage.getItem(K)||'light'}catch(e){return 'light'}}
-function apply(){var m=get(),dk=m==='dark'||(m==='auto'&&mq&&mq.matches);document.body.classList.toggle('dk',!!dk);document.documentElement.setAttribute('data-theme',dk?'dark':'light');
+function apply(){var m=get(),dk=m==='dark';document.body.classList.toggle('dk',!!dk);document.documentElement.setAttribute('data-theme',dk?'dark':'light');
  var mt=document.querySelector('meta[name=color-scheme]');if(mt)mt.content=dk?'dark':'light';var tc=document.querySelector('meta[name=theme-color]');if(!tc){tc=document.createElement('meta');tc.name='theme-color';document.head.appendChild(tc)}tc.content=dk?'#0b1324':'#0a1f4d';
  document.querySelectorAll('.thSw button').forEach(function(b){b.classList.toggle('on',b.dataset.m===m)})}
 window.setTheme=function(m){try{localStorage.setItem(K,m)}catch(e){}apply()};
@@ -5524,6 +5524,62 @@ function ctOf(l){var p=(typeof S!=='undefined'&&S.produits||[]).find(function(k)
 function sortL(x){if(x&&Array.isArray(x.l))x.l.sort(function(a,b){return ctOf(b)-ctOf(a)})}
 ['clOpen','clPdf'].forEach(function(n){var o=window[n];if(typeof o!=='function')return;window[n]=function(id){try{sortL(S.colis.find(function(k){return k.id===id}))}catch(e){}return o.apply(this,arguments)}});
 var sv=window.clSaveList;if(typeof sv==='function')window.clSaveList=function(){try{if(window.CLD)sortL(CLD)}catch(e){}return sv.apply(this,arguments)};
+})();
+</script>
+<script id="alfa-v111">
+/* v111 — « + Produit » : filtre pour lier le produit à une commande et recalculer les frais */
+(function(){
+var LK=0,PREV=0,PID=0,FT='all',TX='',FR=[];
+function $$(i){return document.getElementById(i)}
+function lots(){return (S.lots||[]).filter(function(l){return !l.init}).slice().reverse()}
+function cur(){return {q:+(($$('e2')||{}).value)||0,pa:+(($$('e3')||{}).value)||0}}
+function X(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function shown(){var q=TX.trim().toLowerCase();return lots().filter(function(l){
+ if(FT==='fr'&&!(lotFrais(l)>0))return false;if(FT==='nofr'&&lotFrais(l)>0)return false;
+ var hay=(lotName(l)+' '+(l.fourn||'')+' '+new Date(l.d).toLocaleDateString('fr-FR')).toLowerCase();return !q||hay.indexOf(q)>=0})}
+window.lkList=function(){var e=$$('lkL');if(!e)return;var L=shown();
+ e.innerHTML='<div class="item'+(LK===0?' dvIn':'')+'" style="margin:4px 0" onclick="lkSel(0)"><div class="t"><b>Aucune commande</b><span>Le produit ne porte pas de frais d’approvisionnement</span></div><span class="badge">'+(LK===0?'✓':'')+'</span></div>'+
+ (L.map(function(l){var fr=lotFrais(l),r=lotRatio(l);return '<div class="item'+(LK===l.id?' dvIn':'')+'" style="margin:4px 0" onclick="lkSel('+l.id+')"><div class="t"><b>'+X(lotName(l))+'</b><span>'+new Date(l.d).toLocaleDateString('fr-FR')+(l.fourn?' · '+X(l.fourn):'')+' · '+l.lignes.length+' produit'+(l.lignes.length>1?'s':'')+'<br>Frais : '+G(fr)+(fr>0?' · +'+P(r*100):'')+'</span></div><span class="badge">'+(LK===l.id?'✓':'+')+'</span></div>'}).join('')||'<div class="empty" style="padding:10px">'+(lots().length?'Aucune commande ne correspond au filtre.':'Aucune commande. Créez-en une dans « Commandes ».')+'</div>');
+ [].forEach.call(document.querySelectorAll('#lkB .chip'),function(c){c.style.cssText=c.dataset.f===FT?'background:#145bd7;color:#fff;border-color:#145bd7':''});
+ lkPrev()};
+window.lkSel=function(id){LK=id;lkList()};
+window.lkF=function(f){FT=f;lkList()};
+function pend(){return FR.filter(function(x){return +x.m>0}).map(function(x){return {nom:(x.nom||'').trim()||'Frais',m:+x.m,dev:x.dev||'GNF'}})}
+function pendG(){return pend().reduce(function(a,x){return a+x.m*RT()[x.dev]},0)}
+window.lkPrev=function(){var e=$$('lkV');if(!e)return;var l=S.lots.find(function(x){return x.id===LK}),c=cur(),pg=pendG();
+ if(!l){if(pg>0){var a=c.q*c.pa*S.taux;e.innerHTML=a>0?'Une <b>nouvelle commande</b> sera créée pour ce produit avec ses frais.<br>Frais : <b>'+G(pg)+'</b> · +'+P(pg/a*100)+' sur la marchandise<br>Frais par unité : <b>'+G(pg/c.q)+'</b> · Coût de revient estimé : <b>'+G(c.pa*S.taux+pg/c.q)+'</b> / unité':'Renseignez le stock et le prix d’achat pour calculer les frais.';return}
+  e.innerHTML='Aucune commande liée : le coût de revient de ce produit ne contient pas de frais.';return}
+ var has=l.lignes.some(function(x){return x.pid===PID}),a0=lotAchat(l),fr0=lotFrais(l),fr=fr0+pg,r0=a0>0?fr0/a0:0,add=has?0:c.q*c.pa*S.taux,a1=a0+add,r1=a1>0?fr/a1:0,mine=has?l.lignes.filter(function(x){return x.pid===PID}).reduce(function(s,x){return s+x.q*x.pa*S.taux},0):add,part=mine*r1,n=l.lignes.length+(has?0:1);
+ if(!(fr>0)){e.innerHTML='Cette commande n’a pas encore de frais. Ajoutez-les ci-dessous : ils seront répartis sur ses produits, dont celui-ci.';return}
+ e.innerHTML='Frais de la commande : <b>'+G(fr)+'</b>'+(pg>0?' (dont <b>'+G(pg)+'</b> ajoutés ici)':'')+' répartis sur <b>'+n+' produit'+(n>1?'s':'')+'</b><br>Part de ce produit : <b>'+G(part)+'</b>'+(c.q>0?' · <b>'+G(part/c.q)+'</b> / unité':'')+'<br>Frais sur la marchandise : +'+P(r0*100)+' → <b>+'+P(r1*100)+'</b>'+(c.q>0&&c.pa>0?'<br>Coût de revient estimé : <b>'+G(c.pa*S.taux*(1+r1))+'</b> / unité':'')};
+window.lkAddF=function(n){FR.push({nom:n,m:'',dev:CUR()});lkFr()};
+window.lkDelF=function(i){FR.splice(i,1);lkFr()};
+window.lkSetF=function(i,k,v){FR[i][k]=v;lkPrev()};
+function lkFr(){var e=$$('lkFr');if(!e)return;e.innerHTML=FR.map(function(x,i){return '<div style="border:1px solid var(--line);border-radius:14px;padding:8px 10px;margin-top:8px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:13.5px">Frais '+(i+1)+'</b><button type="button" class="link" style="font-size:18px" onclick="lkDelF('+i+')">✕</button></div><input value="'+X(x.nom)+'" placeholder="Ex : fret maritime" oninput="lkSetF('+i+',\'nom\',this.value)"><div class="row" style="margin-top:6px"><div><input type="number" step="any" inputmode="decimal" value="'+X(x.m)+'" placeholder="Montant" oninput="lkSetF('+i+',\'m\',this.value)"></div><div><select onchange="lkSetF('+i+',\'dev\',this.value)">'+['GNF','USD','EUR'].map(function(c){return '<option'+(x.dev===c?' selected':'')+'>'+c+'</option>'}).join('')+'</select></div></div></div>'}).join('');lkPrev()}
+function inject(id){var e4=$$('e4');if(!e4||$$('lkB'))return;PID=id||0;LK=PREV=0;FT='all';TX='';FR=[];
+ var p=id?S.produits.find(function(x){return x.id===id}):null;
+ if(p){var m=lots().filter(function(l){return l.lignes.some(function(x){return x.pid===p.id})});if(m.length===1){LK=PREV=m[0].id}}
+ var html='<div id="lkB" style="border:1px solid var(--line);border-radius:16px;padding:12px;margin:14px 0 4px"><b style="font-size:15px">🔗 Lier à une commande</b><p style="color:var(--mut);font-size:12.5px;margin:4px 0 8px">Choisissez la commande d’achat de ce produit : ses frais (fret, transport, déchargement…) sont recalculés et répartis, et le coût de revient est mis à jour.</p>'+
+  '<input id="lkQ" placeholder="🔎 Filtrer : nom, fournisseur, date…" oninput="TX_(this.value)" autocomplete="off"><div class="chips" style="margin:8px 0"><span class="chip" data-f="all" onclick="lkF(\'all\')">Toutes</span><span class="chip" data-f="fr" onclick="lkF(\'fr\')">Avec frais</span><span class="chip" data-f="nofr" onclick="lkF(\'nofr\')">Sans frais</span></div>'+
+  '<div id="lkL" style="max-height:230px;overflow-y:auto;border:1px solid var(--line);border-radius:14px;padding:4px 8px"></div><div class="calc" id="lkV" style="background:#eef4ff;border:1px solid #cfe0fb;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:13.5px;color:#0b2266"></div>'+
+  '<div style="margin-top:14px"><b style="font-size:14.5px">⛟ Frais d’approvisionnement</b><p style="color:var(--mut);font-size:12.5px;margin:3px 0 6px">Facultatif : ajoutés à la commande liée (ou à une nouvelle commande créée pour ce produit) à l’enregistrement.</p><div class="chips">'+FR_CH.map(function(n){return '<span class="chip" onclick="lkAddF(\''+n+'\')">+ '+n+'</span>'}).join('')+'<span class="chip" onclick="lkAddF(\'\')">+ Autre</span></div><div id="lkFr"></div></div></div>';
+ var an=e4.previousElementSibling&&e4.previousElementSibling.tagName==='LABEL'?e4.previousElementSibling:e4;an.insertAdjacentHTML('beforebegin',html);
+ window.TX_=function(v){TX=v;lkList()};
+ ['e2','e3'].forEach(function(i){var e=$$(i);if(e)e.addEventListener('input',lkPrev)});lkList();lkFr()}
+var _e=editProd;editProd=function(id){var r=_e.apply(this,arguments);try{inject(id)}catch(x){}return r};
+var _s=saveProd;saveProd=function(id){
+ if(!$$('lkB'))return _s.apply(this,arguments);
+ var sel=LK,prev=PREV,pf=pend();
+ if(sel||pf.length){var c=cur();if(!(c.q>0&&c.pa>0)){alert('Pour lier le produit à une commande ou ajouter des frais, renseignez le stock et le prix d’achat.');return}}
+ var ids=S.produits.map(function(p){return p.id}),r=_s.apply(this,arguments);
+ try{if($$('sheet').classList.contains('open'))return r;
+  var p=id?S.produits.find(function(x){return x.id===id}):S.produits.find(function(x){return ids.indexOf(x.id)<0});
+  if(p&&(sel||prev||pf.length)){
+   if(prev&&prev!==sel){var lp=S.lots.find(function(l){return l.id===prev});if(lp)lp.lignes=lp.lignes.filter(function(x){return x.pid!==p.id})}
+   var tg=null;if(sel){tg=S.lots.find(function(x){return x.id===sel});if(tg&&!tg.lignes.some(function(x){return x.pid===p.id}))tg.lignes.push({pid:p.id,q:+p.qte||0,pa:+p.pa||0,prev:+p.pa||0})}
+   if(pf.length){if(!tg){tg={id:Date.now(),nom:'Achat — '+p.nom,d:new Date().toISOString(),fourn:'',lignes:[{pid:p.id,q:+p.qte||0,pa:+p.pa||0,prev:+p.pa||0}],frais:[]};S.lots.push(tg)}pf.forEach(function(x){tg.frais.push(x)})}
+   _fu=null;save();render()}}catch(x){}
+ return r};
 })();
 </script>
 </body></html>
