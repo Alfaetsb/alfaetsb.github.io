@@ -58,3 +58,14 @@ self.addEventListener('fetch', function (e) {
     })
   );
 });
+
+/* Clic sur une notification du téléphone : ouvre ou ramène l'application */
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+      for (var i = 0; i < list.length; i++) { if ('focus' in list[i]) return list[i].focus(); }
+      return self.clients.openWindow('./');
+    })
+  );
+});
