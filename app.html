@@ -3051,8 +3051,8 @@ var st=document.createElement('style');st.textContent=
 '.mnX{color:#9aa8bd;font-size:20px;flex:none}'+
 '.mnR.out .mnT b{color:#c62828}';
 document.head.appendChild(st);
-var G1=[['Gestion','#eaf2fe',['Accueil','Boutiques','Clients','Devis','Achats','Frais','Inventaire','Commandes annulées']],['Finances','#e3f6ea',['Dépenses','Caisse','Dépôts bancaires','Banques','Coins utilisés']],['Outils','#fff4e5',['Rapports','Assistant','Journal','Réglages','Profils & permissions']],['Mon compte','#f1ebfd',['Mon code PIN','Changer d’utilisateur']]];
-var SUB={'Rapports':'Ventes, bénéfices et statistiques','Accueil':'Tableau de bord','Boutiques':'Profils, stocks et performances','Clients':'Fiches, dettes et fidélité','Achats':'Commandes fournisseurs','Frais':'Transport, fret, déchargement','Inventaire':'Comptage et écarts de stock','Commandes annulées':'Historique des annulations','Dépenses':'Charges de fonctionnement','Caisse':'Entrées et sorties d’argent','Dépôts bancaires':'Versements à la banque','Assistant':'Posez une question sur vos chiffres','Journal':'Toutes les actions enregistrées','Réglages':'Boutique, taux, sauvegarde','Mon code PIN':'Changer mon code secret','Changer d’utilisateur':'Se déconnecter / autre profil'};
+var G1=[['Gestion','#eaf2fe',['Accueil','Boutiques','Clients','Dettes clients','Devis','Achats','Frais','Inventaire','Commandes annulées']],['Finances','#e3f6ea',['Dépenses','Caisse','Dépôts bancaires','Banques','Coins utilisés']],['Outils','#fff4e5',['Rapports','Assistant','Journal','Réglages','Profils & permissions']],['Mon compte','#f1ebfd',['Mon code PIN','Changer d’utilisateur']]];
+var SUB={'Dettes clients':'Sommes dues, échéances et paiements','Rapports':'Ventes, bénéfices et statistiques','Accueil':'Tableau de bord','Boutiques':'Profils, stocks et performances','Clients':'Fiches, dettes et fidélité','Achats':'Commandes fournisseurs','Frais':'Transport, fret, déchargement','Inventaire':'Comptage et écarts de stock','Commandes annulées':'Historique des annulations','Dépenses':'Charges de fonctionnement','Caisse':'Entrées et sorties d’argent','Dépôts bancaires':'Versements à la banque','Assistant':'Posez une question sur vos chiffres','Journal':'Toutes les actions enregistrées','Réglages':'Boutique, taux, sauvegarde','Mon code PIN':'Changer mon code secret','Changer d’utilisateur':'Se déconnecter / autre profil'};
 function norm(t){return t.replace(/\s+/g,' ').trim()}
 var _mm=moreMenu;moreMenu=function(){var r=_mm.apply(this,arguments);try{var body=$('sheetBody'),tl=body&&body.querySelector('.tiles');if(!tl)return r;
  var items=[].slice.call(tl.querySelectorAll('button.tile')).map(function(b){var ic=b.querySelector('b'),lab=norm([].slice.call(b.childNodes).filter(function(n){return n!==ic}).map(function(n){return n.textContent}).join(' '));return{ic:ic?ic.textContent.trim():'•',lab:lab,oc:b.getAttribute('onclick')||''}});
@@ -4389,6 +4389,125 @@ async function build(){var L=await lib(),r=coinsRows(),Tt=coinsTot(r),doc=await 
 window.coinsPdfBuild=build;
 coinsOut=async function(){openSheet('<div style="text-align:center;padding:30px 10px"><div style="font-size:42px">⏳</div><b>Préparation du PDF des coins…</b></div>');
  try{var r=await build();pdfOut(r.name,new Blob([r.bytes],{type:'application/pdf'}))}catch(e){closeSheet();alert(e&&e.message==='lib'?'Impossible de charger le module PDF. Vérifiez la connexion internet.':'Erreur : '+(e&&e.message||e))}};
+})();
+</script>
+<script id="alfa-v101-menuclose">
+/* v101 — bouton fermer à côté du titre « Menu » */
+(function(){
+var st=document.createElement('style');st.textContent='#sheetBody .mnTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px}#sheetBody .mnTop h2{margin:0!important}#sheetBody .mnX{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--card,#fff);color:var(--ink,#0d1b3d);display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 10px #1c3d7a14}#sheetBody .mnX:active{transform:scale(.92)}';
+document.head.appendChild(st);
+var X='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+var _m=moreMenu;moreMenu=function(){var r=_m.apply(this,arguments);try{var b=document.getElementById('sheetBody'),h=b&&b.querySelector('h2');if(h&&/^\s*Menu\s*$/.test(h.textContent)&&!b.querySelector('.mnTop')){var w=document.createElement('div');w.className='mnTop';h.parentNode.insertBefore(w,h);w.appendChild(h);w.insertAdjacentHTML('beforeend','<button class="mnX" onclick="closeSheet()" aria-label="Fermer le menu">'+X+'</button>')}}catch(e){}return r};
+})();
+</script>
+<script id="alfa-v102-dettes">
+/* v102 — page « Dettes clients » */
+(function(){
+document.querySelector('main').insertAdjacentHTML('beforeend','<section class="tab" id="t-dettes"></section>');
+TABS.push(['dettes','💳','Dettes clients']);['Administrateur','Comptable'].forEach(function(r){if(ROLES[r]&&ROLES[r].indexOf('dettes')<0)ROLES[r].push('dettes')});
+$('nav').insertAdjacentHTML('beforeend','<button id="b-dettes" onclick="go(\'dettes\')" style="display:none"><b><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg></b>Dettes</button>');
+var st=document.createElement('style');st.textContent=
+'#t-dettes .dtH{display:flex;align-items:center;gap:12px;margin:4px 0 14px}#t-dettes .dtH button{flex:none;width:44px;height:44px;border-radius:14px;border:1px solid var(--line);background:var(--card,#fff);color:var(--ink,#0d1b3d);display:grid;place-items:center;cursor:pointer}#t-dettes .dtH b{display:block;font:800 26px/1.1 Inter,system-ui,sans-serif;letter-spacing:-.6px;color:var(--ink,#0d1b3d)}#t-dettes .dtH span{display:block;color:var(--mut);font-size:14px;margin-top:3px}'+
+'#t-dettes .dtK{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}#t-dettes .dtK>div{border:1px solid var(--line);border-radius:20px;padding:14px;min-width:0;background:var(--card,#fff)}#t-dettes .dtK .h{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;color:var(--mut)}#t-dettes .dtK .v{font:800 clamp(22px,7vw,32px)/1.1 Inter,system-ui,sans-serif;letter-spacing:-1px;margin:10px 0 6px;white-space:nowrap;color:var(--ink,#0d1b3d)}#t-dettes .dtK .v small{font-size:13px;letter-spacing:0;margin-left:3px}#t-dettes .dtK .s{color:var(--mut);font-size:13px}'+
+'#t-dettes .dtK .w{background:#fff3df;border-color:#f3cf8f}#t-dettes .dtK .w .h,#t-dettes .dtK .w .s{color:#8a4b00}#t-dettes .dtK .w .v{color:#b86a00}body.alfa.dk #t-dettes .dtK .w{background:linear-gradient(135deg,#4a2f0c,#2e1d07);border-color:#7a5214}body.alfa.dk #t-dettes .dtK .w .h,body.alfa.dk #t-dettes .dtK .w .s{color:#ffd28a}body.alfa.dk #t-dettes .dtK .w .v{color:#ffc35c}'+
+'#t-dettes .dtF{display:flex;gap:8px;overflow-x:auto;margin:14px 0 12px;scrollbar-width:none}#t-dettes .dtF::-webkit-scrollbar{display:none}#t-dettes .dtF button{flex:none;display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--card,#fff);color:var(--ink,#0d1b3d);border-radius:999px;padding:9px 15px;font:600 14.5px inherit;font-family:inherit;cursor:pointer}#t-dettes .dtF button.on{background:#2f7cf0;border-color:#2f7cf0;color:#fff}#t-dettes .dtF i{width:9px;height:9px;border-radius:50%}'+
+'#t-dettes .dtS{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:16px;padding:0 14px;background:var(--card,#fff);margin-bottom:12px}#t-dettes .dtS svg{flex:none;color:var(--mut)}#t-dettes .dtS input{flex:1;min-width:0;border:0!important;background:transparent!important;box-shadow:none!important;padding:14px 0!important;margin:0!important;font-size:15px}'+
+'#t-dettes .dtI{border:1px solid var(--line);border-radius:20px;padding:14px;margin-bottom:12px;background:var(--card,#fff)}#t-dettes .dtI .r1{display:flex;align-items:center;gap:12px;cursor:pointer}#t-dettes .dtI .av{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:800 16px Inter,system-ui,sans-serif}#t-dettes .dtI .nm{flex:1;min-width:0}#t-dettes .dtI .nm b{display:block;font-size:16.5px;color:var(--ink,#0d1b3d);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#t-dettes .dtI .nm span{display:block;color:var(--mut);font-size:13px;margin-top:2px;line-height:1.35}#t-dettes .dtI .nm span.late{color:#c62828;font-weight:700}'+
+'#t-dettes .bd{flex:none;border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:700}#t-dettes .bd.o{background:#fdebd0;color:#a35a00}#t-dettes .bd.p{background:#e3edff;color:#145bd7}#t-dettes .bd.y{background:#dff5ea;color:#0f7a4d}body.alfa.dk #t-dettes .bd.o{background:#3a2a10;color:#ffc35c}body.alfa.dk #t-dettes .bd.p{background:#16305e;color:#9cc3ff}body.alfa.dk #t-dettes .bd.y{background:#12352a;color:#7fe0ac}'+
+'#t-dettes .dtI .lb{color:var(--mut);font-size:13px;margin:12px 0 2px}#t-dettes .dtI .r2{display:flex;justify-content:space-between;align-items:baseline;gap:10px}#t-dettes .dtI .r2 b{font:800 25px/1.1 Inter,system-ui,sans-serif;color:#c77800;letter-spacing:-.6px;white-space:nowrap}#t-dettes .dtI .r2 b small{font-size:12px;letter-spacing:0;margin-left:2px}#t-dettes .dtI .r2 span{color:var(--mut);font-size:13.5px;white-space:nowrap}body.alfa.dk #t-dettes .dtI .r2 b{color:#ffc35c}#t-dettes .dtI.done .r2 b{color:#12924f}'+
+'#t-dettes .pg{height:8px;border-radius:8px;background:var(--line);margin:10px 0 6px;overflow:hidden}#t-dettes .pg i{display:block;height:100%;min-width:6px;border-radius:8px;background:#5b9cf5}#t-dettes .dtI.done .pg i{background:#22b55a}#t-dettes .pp{color:var(--mut);font-size:13.5px}'+
+'#t-dettes .dtB{display:block;width:100%;margin-top:12px;height:48px;border-radius:14px;border:1.5px solid #2f7cf0;background:transparent;color:#2f7cf0;font:700 15.5px inherit;font-family:inherit;cursor:pointer}body.alfa.dk #t-dettes .dtB{background:#16305e;border-color:#2f5fb0;color:#9cc3ff}'+
+'#t-dettes .dtSh{margin:12px 0 0}#t-dettes .dtSh button{font-size:13.5px;padding:8px 13px}#t-dettes .dtSh button.on{background:#0a1f4d;border-color:#0a1f4d}body.alfa.dk #t-dettes .dtSh button.on{background:#e6efff;border-color:#e6efff;color:#0a1f4d}'+
+'#t-dettes .dtSR{display:flex;gap:10px;margin-bottom:12px}#t-dettes .dtSR .dtS{flex:1;min-width:0;margin:0}#t-dettes .dtP{flex:none;display:flex;align-items:center;gap:6px;border:0;border-radius:16px;padding:0 16px;background:linear-gradient(135deg,#2f7cf0,#1a5fd6);color:#fff;font:700 15px inherit;font-family:inherit;cursor:pointer;box-shadow:0 8px 18px #2f7cf044}'+
+'#t-dettes .dtM{display:block;border:0;background:none;color:#2f7cf0;font:700 16px inherit;font-family:inherit;padding:8px 4px 14px;cursor:pointer}';
+document.head.appendChild(st);
+var _g=go;go=function(t){if(t==='dettes'&&cur!=='dettes'&&!window.__dtIn){SH=curB?curB:'all';FL='all';Q=''}window.__dtIn=0;return _g.apply(this,arguments)};
+var _r=render;render=function(){if(cur==='dettes'){try{ctx()}catch(e){}renderDettes();return}return _r.apply(this,arguments)};
+var FL='all',SH='all',Q='',LIM=15,BACK='cli',PAL=[['#e6efff','#0b47c2'],['#e3f6ee','#0f7a4d'],['#efeaff','#5b3fc4'],['#fff1e0','#a35a00'],['#fde8ec','#b4234a']];
+function ini(n){var w=String(n||'?').trim().split(/\s+/);return ((w[0]||'?').charAt(0)+(w.length>1?w[w.length-1].charAt(0):'')).toUpperCase()}
+function hsh(t){var h=0;t=String(t);for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h)}
+function money(n){var g=G(n),m=g.match(/^(.*?)\s*(GNF|USD|EUR|\$|€)$/);return m?esc(m[1])+'<small>'+m[2]+'</small>':esc(g)}
+function bare(n){return G(n).replace(/\s*(GNF|USD|EUR|\$|€)$/,'')}
+function dd(k){return new Date(k+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'short'})}
+function items(){var L=[];
+ bonsAll().forEach(function(g){var t=sumT(g),d=sumD(g),ps=(typeof bonPays==='function'?bonPays(g):(g[0].pays||[])).filter(function(p){return p.m>0&&!p.coins});var wasCredit=d>0||ps.length>1||g[0].ech;if(!wasCredit||!(t>0))return;var v=g[0],e=typeof echInfo==='function'?echInfo(g):null;
+  L.push({k:'v',bid:v.bid||'',id:v.id,nom:v.client||'Client comptoir',ref:'R-'+String(bonOf(v)).slice(-6),tot:t,due:d,paid:t-d,ech:v.ech||'',late:!!(e&&e.late),d:v.d})});
+ (S.dettes||[]).forEach(function(x){var c=S.clients.find(function(k){return k.id===x.cl}),D=dueD(x);L.push({k:'d',bid:null,id:x.id,nom:c?c.nom:'Client',ref:x.motif?x.motif:'Dette hors vente',tot:x.m,due:D,paid:x.m-D,ech:'',late:false,d:x.d})});
+ return L}
+function stOf(x){return x.due<=0?['y','Payée']:x.paid>0?['p','Partielle']:['o','Ouverte']}
+function shN(b){if(b==='')return 'Stock principal';var x=(S.boutiques||[]).find(function(k){return String(k.id)===String(b)});return x?x.nom:'—'}
+function inSh(x){return SH==='all'||(x.bid!==null&&String(x.bid)===String(SH))}
+function visible(){var q=Q.trim().toLowerCase();return items().filter(inSh).filter(function(x){var s=stOf(x)[0];return (FL==='all'?x.due>0:s===FL)&&(!q||x.nom.toLowerCase().indexOf(q)>=0||String(x.ref).toLowerCase().indexOf(q)>=0)}).sort(function(a,b){return (b.late-a.late)||(FL==='y'?new Date(b.d)-new Date(a.d):b.due-a.due)})}
+window.renderDettes=function(){var t=$('t-dettes');if(!t)return;var A=items().filter(inSh),q=Q.trim().toLowerCase();
+ var open=A.filter(function(x){return x.due>0}),tot=open.reduce(function(a,x){return a+x.due},0),nd={};open.forEach(function(x){nd[x.nom.toLowerCase()]=1});var nD=Object.keys(nd).length;
+ var C={all:A.filter(function(x){return x.due>0}).length,o:A.filter(function(x){return stOf(x)[0]==='o'}).length,p:A.filter(function(x){return stOf(x)[0]==='p'}).length,y:A.filter(function(x){return stOf(x)[0]==='y'}).length};
+ var L=visible();
+ var h='<div class="dtH"><button onclick="go(\''+BACK+'\')" aria-label="Retour"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button><div><b>Dettes clients</b><span>Suivi des sommes qui vous sont dues</span></div></div>'+
+ '<div class="dtK"><div class="w"><div class="h"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3 10h18M7 15h4"/></svg>Dette totale ouverte</div><div class="v">'+money(tot)+'</div><div class="s">'+(SH==='all'?'Toutes les boutiques':esc(shN(SH)))+'</div></div>'+
+ '<div><div class="h"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#2f7cf0" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.6 3.2-5.6 6.5-5.6s6 2 6.5 5.6M16 4.6a3.4 3.4 0 0 1 0 6.6M18.5 14.6c1.8.7 3 2.4 3.2 5.4"/></svg>Débiteurs</div><div class="v">'+nD+'</div><div class="s">client'+(nD>1?'s':'')+' avec dettes</div></div></div>'+
+ ((S.boutiques||[]).length?'<div class="dtF dtSh">'+[['all','🌐 Toutes les boutiques'],['','🏭 Stock principal']].concat((S.boutiques||[]).map(function(b){return [String(b.id),'🏬 '+b.nom]})).map(function(x){return '<button class="'+(String(SH)===x[0]?'on':'')+'" onclick="dtSh(\''+x[0]+'\')">'+esc(x[1])+'</button>'}).join('')+'</div>':'')+
+ '<div class="dtF">'+[['all','Tous · '+C.all,''],['o','Ouvertes · '+C.o,'#f5a623'],['p','Partielles · '+C.p,'#5b9cf5'],['y','Payées · '+C.y,'#3fd18f']].map(function(x){return '<button class="'+(FL===x[0]?'on':'')+'" onclick="dtF(\''+x[0]+'\')">'+(x[2]?'<i style="background:'+x[2]+'"></i>':'')+x[1]+'</button>'}).join('')+'</div>'+
+ '<div class="dtSR"><label class="dtS"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input id="dtQ" placeholder="Nom ou n° de reçu…" value="'+esc(Q)+'" oninput="dtQ(this.value)" autocomplete="off"></label><button class="dtP" onclick="dtPdf()" aria-label="Télécharger en PDF"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>PDF</button></div>';
+ h+=L.slice(0,LIM).map(function(x){var p=PAL[hsh(x.nom)%PAL.length],s=stOf(x),pc=x.tot>0?Math.round(x.paid/x.tot*100):0,open=x.due>0,
+  sub=esc(x.ref)+(SH==='all'&&x.bid!==null&&(S.boutiques||[]).length?' · '+esc(shN(x.bid)):'')+(x.ech?' · '+(x.late&&x.due>0?'<span class="late" style="display:inline">en retard · '+dd(x.ech)+'</span>':'échéance '+dd(x.ech)):''),oc=x.k==='v'?'saleDetail('+x.id+')':'debtDetail('+x.id+')';
+  return '<div class="dtI'+(open?'':' done')+'"><div class="r1" onclick="'+oc+'"><span class="av" style="background:'+p[0]+';color:'+p[1]+'">'+esc(ini(x.nom))+'</span><span class="nm"><b>'+esc(x.nom)+'</b><span>'+sub+'</span></span><span class="bd '+s[0]+'">'+s[1]+'</span></div>'+
+  '<div class="lb">'+(open?'Reste à payer':'Montant réglé')+'</div><div class="r2"><b>'+money(open?x.due:x.tot)+'</b><span>sur '+bare(x.tot)+'</span></div>'+
+  '<div class="pg"><i style="width:'+pc+'%"></i></div><div class="pp">Payé : '+G(x.paid)+' ('+pc+' %)</div>'+
+  (open?'<button class="dtB" onclick="'+(x.k==='v'?'payeSale('+x.id+')':'payDette('+x.id+')')+'">Enregistrer un paiement</button>':'')+'</div>'}).join('');
+ if(L.length>LIM)h+='<button class="dtM" onclick="dtMore()">Voir plus ('+(L.length-LIM)+')</button>';
+ if(!L.length)h+='<div class="empty">'+(FL==='all'&&!q?'Aucune dette en cours. 🎉':'Aucune dette dans ce filtre.')+'</div>';
+ t.innerHTML=h};
+window.dtSh=function(v){SH=v;LIM=15;renderDettes()};
+window.dtF=function(v){FL=v;LIM=15;renderDettes()};
+window.dtQ=function(v){Q=v;LIM=15;var p=document.activeElement&&document.activeElement.selectionStart;renderDettes();var i=$('dtQ');if(i){i.focus();try{i.setSelectionRange(p,p)}catch(e){}}};
+var LIBS=['pdf-lib.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js'];
+function lib(){return new Promise(function(res,rej){if(window.PDFLib)return res(window.PDFLib);var i=0;(function nx(){if(i>=LIBS.length)return rej(new Error('lib'));var sc=document.createElement('script');sc.src=LIBS[i++];sc.onload=function(){window.PDFLib?res(window.PDFLib):nx()};sc.onerror=function(){sc.remove();nx()};document.head.appendChild(sc)})()})}
+var CP='€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+function T(t){t=String(t==null?'':t).replace(/[\u00a0\u202f\u2009]/g,' ').replace(/−/g,'-');var o='';for(var k=0;k<t.length;k++){var c=t[k],n=c.charCodeAt(0);if((n>=32&&n<127)||(n>=160&&n<=255)||CP.indexOf(c)>=0)o+=c;else if(n>=0xD800&&n<=0xDBFF)k++}return o.replace(/\s+/g,' ').trim()}
+async function build(){var L0=await lib(),L=visible(),doc=await L0.PDFDocument.create();doc.setTitle(T('Dettes clients - '+(S.nom||'Alfa ETS~B')));
+ var F=await doc.embedFont(L0.StandardFonts.Helvetica),FB=await doc.embedFont(L0.StandardFonts.HelveticaBold);
+ var C=function(h){return L0.rgb(parseInt(h.substr(1,2),16)/255,parseInt(h.substr(3,2),16)/255,parseInt(h.substr(5,2),16)/255)};
+ var NAVY=C('#0a1f4d'),GOLD=C('#f5b301'),INK=C('#0f1c3a'),MUT=C('#5b6980'),LINE=C('#e2e9f3'),SOFT=C('#f4f7fb'),WHITE=C('#ffffff'),GREEN=C('#12924f'),ORANGE=C('#c77800'),RED=C('#c62828'),BLUE=C('#145bd7');
+ var W=595.28,H=841.89,MX=30,page,y,LG=null;try{LG=await doc.embedPng(window.LOGO_PNG)}catch(e){}
+ function tw(s,z,fn){return (fn||F).widthOfTextAtSize(T(s),z)}
+ function fit(s,z,fn,w){s=T(s);if(tw(s,z,fn)<=w)return s;while(s.length>1&&tw(s+'…',z,fn)>w)s=s.slice(0,-1);return s+'…'}
+ function tx(s,x,yy,o){o=o||{};var z=o.s||9,fn=o.b?FB:F,q=T(s);if(o.w)q=fit(q,z,fn,o.w);var px=o.r?x-tw(q,z,fn):o.c?x-tw(q,z,fn)/2:x;page.drawText(q,{x:px,y:yy,size:z,font:fn,color:o.col||INK})}
+ var N=function(n){return T(f(Math.round(n||0)))};
+ var cols=[['Client',112],['Réf.',66],['Boutique',78],['Échéance',54],['Total',58,1],['Payé',54,1],['Reste',58,1],['Statut',55,0,1]],xs=[],cx=MX;cols.forEach(function(c){xs.push(cx);cx+=c[1]});
+ function head(){page.drawRectangle({x:MX,y:y-15,width:W-2*MX,height:20,color:NAVY});cols.forEach(function(c,i){tx(c[0],c[3]?xs[i]+c[1]/2:c[2]?xs[i]+c[1]-5:xs[i]+5,y-9,{s:8,b:true,col:WHITE,r:c[2],c:c[3]})});y-=20}
+ function np(first){page=doc.addPage([W,H]);if(first){page.drawRectangle({x:0,y:H-104,width:W,height:104,color:NAVY});page.drawRectangle({x:0,y:H-108,width:W,height:4,color:GOLD});var lx=MX;if(LG){page.drawImage(LG,{x:MX,y:H-88,width:66,height:66});lx=MX+78}
+   tx(S.nom||'Alfa ETS~B',lx,H-46,{s:22,b:true,col:WHITE});tx('Inox • Aluminium • Accessoires — Conakry, Guinée',lx,H-64,{s:9.5,col:C('#c9d7f3')});
+   tx('DETTES CLIENTS',W-MX,H-42,{s:15,b:true,col:GOLD,r:1});tx(SH==='all'?'Toutes les boutiques':shN(SH),W-MX,H-58,{s:9.5,b:true,col:WHITE,r:1});
+   tx({all:'Dettes en cours',o:'Dettes ouvertes',p:'Dettes partielles',y:'Dettes payées'}[FL]+(Q.trim()?' · recherche : '+Q.trim():''),W-MX,H-71,{s:8.5,col:C('#c9d7f3'),r:1});
+   tx('Édité le '+new Date().toLocaleString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+(ME?' par '+ME.nom:''),W-MX,H-84,{s:8.5,col:C('#c9d7f3'),r:1});y=H-130}
+  else{y=H-40;tx('Dettes clients — suite',MX,y,{s:9,b:true,col:MUT});y-=16}}
+ np(true);
+ var tot=L.reduce(function(a,x){return a+x.tot},0),pd=L.reduce(function(a,x){return a+x.paid},0),du=L.reduce(function(a,x){return a+x.due},0),cl={};L.forEach(function(x){if(x.due>0)cl[x.nom.toLowerCase()]=1});var late=L.filter(function(x){return x.late&&x.due>0}).length;
+ var bw=(W-2*MX-3*10)/4,K=[['Reste à encaisser',T(G(du)),ORANGE],['Déjà payé',T(G(pd)),GREEN],['Débiteurs',f(Object.keys(cl).length)+' client'+(Object.keys(cl).length>1?'s':''),INK],['En retard',f(late)+' dette'+(late>1?'s':''),late?RED:MUT]];
+ K.forEach(function(k,i){var x=MX+i*(bw+10);page.drawRectangle({x:x,y:y-50,width:bw,height:54,color:SOFT,borderColor:LINE,borderWidth:.8});tx(k[0],x+10,y-12,{s:8,col:MUT,w:bw-16});tx(k[1],x+10,y-36,{s:13,b:true,col:k[2],w:bw-16})});
+ y-=70;head();
+ L.forEach(function(x,i){if(y<70){np(false);head()}var RH=19;if(i%2)page.drawRectangle({x:MX,y:y-RH+5,width:W-2*MX,height:RH,color:SOFT});var my=y-9,s=stOf(x);
+  tx(x.nom,xs[0]+5,my,{s:8.5,b:true,w:cols[0][1]-8});tx(x.ref,xs[1]+5,my,{s:8,col:MUT,w:cols[1][1]-8});tx(x.bid===null?'Hors vente':shN(x.bid),xs[2]+5,my,{s:8,col:MUT,w:cols[2][1]-8});
+  tx(x.ech?new Date(x.ech+'T12:00:00').toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—',xs[3]+5,my,{s:8,col:x.late&&x.due>0?RED:MUT,b:x.late&&x.due>0});
+  tx(N(x.tot),xs[4]+cols[4][1]-5,my,{s:8.5,r:1});tx(N(x.paid),xs[5]+cols[5][1]-5,my,{s:8.5,col:GREEN,r:1});tx(N(x.due),xs[6]+cols[6][1]-5,my,{s:8.8,b:true,col:x.due>0?ORANGE:MUT,r:1});
+  tx(x.late&&x.due>0?'En retard':s[1],xs[7]+cols[7][1]/2,my,{s:8,b:true,c:1,col:x.late&&x.due>0?RED:s[0]==='y'?GREEN:s[0]==='p'?BLUE:ORANGE});y-=RH});
+ if(!L.length){tx('Aucune dette pour ce filtre.',MX+6,y-10,{s:10,col:MUT});y-=24}
+ if(y<70)np(false);page.drawRectangle({x:MX,y:y-16,width:W-2*MX,height:21,color:C('#fff3d6')});tx('TOTAL · '+L.length+' dette'+(L.length>1?'s':''),xs[0]+5,y-9,{s:9,b:true});tx(N(tot),xs[4]+cols[4][1]-5,y-9,{s:9,b:true,r:1});tx(N(pd),xs[5]+cols[5][1]-5,y-9,{s:9,b:true,col:GREEN,r:1});tx(N(du),xs[6]+cols[6][1]-5,y-9,{s:9.5,b:true,col:ORANGE,r:1});
+ tx('Montants en '+T(CUR?CUR():'GNF')+'.',MX,y-34,{s:8,col:MUT});
+ var PG=doc.getPages();PG.forEach(function(pp,k){page=pp;page.drawLine({start:{x:MX,y:40},end:{x:W-MX,y:40},thickness:.6,color:LINE});tx((S.nom||'Alfa ETS~B')+' · alfaetsb.com',MX,26,{s:8,col:MUT});tx('Page '+(k+1)+'/'+PG.length,W-MX,26,{s:8,col:MUT,r:1})});
+ var nm='Dettes_clients_'+(SH==='all'?'toutes_boutiques':T(shN(SH)).replace(/[^\w]+/g,'_'))+'_'+new Date().toISOString().slice(0,10)+'.pdf';
+ return {bytes:await doc.save(),name:nm}}
+window.dtPdfBuild=build;
+window.dtPdf=async function(){openSheet('<div style="text-align:center;padding:30px 10px"><div style="font-size:42px">⏳</div><b>Préparation du PDF des dettes…</b></div>');
+ try{var r=await build();pdfOut(r.name,new Blob([r.bytes],{type:'application/pdf'}))}catch(e){closeSheet();alert(e&&e.message==='lib'?'Impossible de charger le module PDF. Vérifiez la connexion internet.':'Erreur : '+(e&&e.message||e))}};
+window.dtMore=function(){LIM+=20;renderDettes()};
+window.openDettes=function(back){window.__dtIn=1;BACK=back||cur||'cli';FL='all';Q='';SH=curB?curB:'all';go('dettes')};
+/* accès depuis la carte « Reste à encaisser » de la page Clients */
+var _rc=renderCli;renderCli=function(){var r=_rc.apply(this,arguments);try{if(ROLES[ME&&ME.role]&&ROLES[ME.role].indexOf('dettes')>=0){var w=document.querySelector('#t-cli .cpK.w');if(w){w.style.cursor='pointer';w.onclick=function(){openDettes('cli')};var s=w.querySelector('.s');if(s&&!s.querySelector('em'))s.insertAdjacentHTML('beforeend',' <em style="font-style:normal;font-weight:700">· Voir ›</em>')}}}catch(e){}return r};
+/* sous-titre dans le menu */
+var _mm=moreMenu;moreMenu=function(){var r=_mm.apply(this,arguments);try{document.querySelectorAll('#sheetBody .mnR').forEach(function(b){var t=b.querySelector('.mnT b');if(t&&t.textContent==='Dettes clients'&&!b.querySelector('.mnT span'))t.insertAdjacentHTML('afterend','<span>Sommes dues, échéances et paiements</span>')})}catch(e){}return r};
+/* rafraîchir après un paiement */
+var _cs=closeSheet;closeSheet=function(){var r=_cs.apply(this,arguments);if(cur==='dettes')try{renderDettes()}catch(e){}return r};
 })();
 </script>
 <script id="alfa-v81-lockfix">
