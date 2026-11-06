@@ -4562,7 +4562,7 @@ function rows(){var e=$('cRows');if(!e)return;e.innerHTML=CLT.map(function(c,i){
  '<label>Dimensions (cm) — L × l × H</label><div class="row3">'+inp('l','L','decimal')+inp('w','l','decimal')+inp('h','H','decimal')+'</div>'+
  '<label>Emballage</label>'+inp('emb','Carton')+'<div class="calc" id="cCalc'+i+'"></div></div>'}).join('')+'<datalist id="cEmbL"><option>Carton</option><option>Sac</option><option>Fagot / botte</option><option>Caisse bois</option><option>Palette</option><option>Rouleau</option></datalist>';clCalc()}
 window.clRows=rows;
-window.clAddT=function(){CLT.push(blank());rows()};window.clRows=rows;
+window.clAddT=function(){var b=blank(),src=null;for(var i=CLT.length-1;i>=0;i--){var c=CLT[i];if(c&&(c.pb||c.pn||c.l||c.w||c.h||c.emb)){src=c;break}}if(src)['pb','pn','l','w','h','emb'].forEach(function(k){if(src[k]!==undefined&&src[k]!==null&&src[k]!=='')b[k]=src[k]});CLT.push(b);rows();try{clCalc()}catch(e){}};window.clRows=rows;
 function num2(v){var x=parseFloat(String(v==null?'':v).replace(',','.'));return x>0?x:0}
 function clean(c){var o={pc:Math.round(num2(c.pc)),nb:Math.round(num2(c.nb)),pb:num2(c.pb),pn:num2(c.pn),l:num2(c.l),w:num2(c.w),h:num2(c.h),emb:String(c.emb||'').trim(),lab:String(c.lab||'').trim()};Object.keys(o).forEach(function(k){if(!o[k])delete o[k]});return o}
 function readF(){var T=(window.CLT||[]).map(clean).filter(function(c){return c.pc>0});return T.length?{t:T}:{}}
