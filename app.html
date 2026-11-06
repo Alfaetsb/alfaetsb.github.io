@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8">
+<html lang="fr"><head><script id="alfa-err-capture">window.__errs=[];window.addEventListener('error',function(e){try{window.__errs.push((e.message||'erreur')+' (ligne '+(e.lineno||'?')+')')}catch(x){}});window.addEventListener('unhandledrejection',function(e){try{var m=e.reason&&e.reason.message||String(e.reason);if(!/persist/i.test(m))window.__errs.push('promesse : '+m)}catch(x){}});</script><script id="alfa-storage-shim">(function(){function mem(){var d={};return {getItem:function(k){return Object.prototype.hasOwnProperty.call(d,k)?d[k]:null},setItem:function(k,v){d[k]=String(v)},removeItem:function(k){delete d[k]},clear:function(){d={}},key:function(i){return Object.keys(d)[i]||null},get length(){return Object.keys(d).length}}}
+['localStorage','sessionStorage'].forEach(function(n){try{window[n].getItem('x')}catch(e){try{Object.defineProperty(window,n,{value:mem(),configurable:true})}catch(x){}}})})();</script><script id="alfa-lock-design">try{localStorage.setItem('alfaUi','on');localStorage.setItem('thm','premium');localStorage.setItem('alfaTheme','light')}catch(e){}</script><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Alfa ETS~B — Gestion Pro (v78)</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -5057,7 +5058,7 @@ function range(){var A=window.dfApi,o=A&&A.get('dash');if(o){if(o.k==='all')retu
 function mine(v){if(curB&&String(v.bid||'')!==String(curB))return false;if(!curB&&!window.ALLV&&v.bid)return false;if(role()==='Vendeur'&&ME&&v.u&&v.u!==ME.nom)return false;return true}
 function img(p){var s=p&&(typeof pImgA==='function'?pImgA(p):p.img);return s?'<img src="'+s+'" alt="">':'📦'}
 function ini(n){var w=String(n||'?').trim().split(/\s+/);return ((w[0]||'?').charAt(0)+(w.length>1?w[w.length-1].charAt(0):'')).toUpperCase()}
-var _rd=renderDash;renderDash=function(){try{_rd.apply(this,arguments)}catch(e){}try{grab();build()}catch(e){console.error(e)}};
+var _rd=renderDash;renderDash=function(){try{_rd.apply(this,arguments)}catch(e){}try{grab();build()}catch(e){console.error(e);try{(window.__errs=window.__errs||[]).push('Accueil : '+(e&&e.message)+' '+(e&&e.stack?String(e.stack).split('\n').slice(1,3).join(' ').replace(/\s+/g,' '):''))}catch(x){}}};
 var OLD={bar:null,pil:[],stk:[]};
 function grab(){var t=$('t-dash');if(!t)return;OLD={bar:t.querySelector('.dfBar'),pil:[],stk:[]};var kids=[].slice.call(t.children),mode='';
  kids.forEach(function(e){if(e.tagName==='H2'){var x=e.textContent.trim();mode=/^Pilotage/.test(x)?'pil':/^Situation du stock/.test(x)?'stk':''}else if(e.classList&&(e.classList.contains('sec')||e.classList.contains('hero')||e.classList.contains('tiles')))mode='';if(mode&&!(mode==='pil'&&/^(Valeur du stock|Ventes —)/.test((e.textContent||'').trim())))OLD[mode].push(e)})}
@@ -5581,5 +5582,21 @@ var _s=saveProd;saveProd=function(id){
    _fu=null;save();render()}}catch(x){}
  return r};
 })();
+</script>
+<script id="alfa-v112">
+/* v112 — design verrouillé : même apparence sur tous les téléphones (plus de bascule ancien / nouveau design, clair / sombre) */
+(function(){
+window.setTheme=function(){try{localStorage.setItem('alfaUi','on');localStorage.setItem('thm','premium');localStorage.setItem('alfaTheme','light')}catch(e){}};
+function hide(){try{document.querySelectorAll('.thSw').forEach(function(e){var k=e.closest('.k,.mnC')||e.parentElement;if(k)k.style.display='none'});
+ document.querySelectorAll('button[onclick^="setTheme"]').forEach(function(b){var p=b.parentNode;if(p)p.style.display='none'});
+ document.querySelectorAll('.mnG').forEach(function(g){if(/^Apparence/.test(g.textContent.trim())){g.style.display='none';var n=g.nextElementSibling;if(n&&n.classList.contains('mnC'))n.style.display='none'}})}catch(e){}}
+['renderReg','moreMenu'].forEach(function(n){var o=window[n];if(typeof o!=='function')return;window[n]=function(){var r=o.apply(this,arguments);hide();return r};try{eval(n+'=window[n]')}catch(e){}});
+})();
+</script>
+<script id="alfa-err-banner">
+(function(){var shown=0;function chk(){try{var E=(window.__errs||[]).filter(function(m){return !/persist|ResizeObserver|Script error/i.test(m)});if(!E.length||shown===E.length)return;shown=E.length;
+ var d=document.getElementById('errB');if(!d){d=document.createElement('div');d.id='errB';d.style.cssText='position:fixed;left:8px;right:8px;top:8px;z-index:100000;background:#7a1010;color:#fff;font:600 11.5px/1.35 system-ui,sans-serif;padding:8px 10px;border-radius:10px;box-shadow:0 6px 18px #0006;max-height:30vh;overflow:auto';d.onclick=function(){d.remove();shown=-1};document.body.appendChild(d)}
+ d.innerHTML='⚠ Erreur d’affichage (touchez pour fermer) :<br>'+E.slice(-3).map(function(m){return String(m).replace(/[<>&]/g,'').slice(0,240)}).join('<br>')}catch(x){}}
+setInterval(chk,1500);})();
 </script>
 </body></html>
