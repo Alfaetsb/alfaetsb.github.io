@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ALFA ETS~B — Gestion</title><meta name="theme-color" content="#0b1f4d">
+<style>
+:root{--nv:#0b1f4d;--bl:#1565e0;--gr:#12a150;--rd:#c62828;--bg:#f2f5fb;--mut:#5b6b88;--ln:#e1e8f2}
+*{box-sizing:border-box}body{margin:0;font:15px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:#0f1b33;padding-bottom:84px}
+header{background:var(--nv);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+header b{font-size:17px}header small{opacity:.75;display:block;font-size:12px}
+main{padding:14px;max-width:720px;margin:0 auto}
+.card{background:#fff;border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.k span{display:block;color:var(--mut);font-size:12px}.k b{font-size:19px}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--ln);cursor:pointer}.item:last-child{border:0}
+.item small{color:var(--mut);display:block}.neg{color:var(--rd)}.pos{color:var(--gr)}
+input,select{width:100%;padding:12px;border:1px solid #cdd7e8;border-radius:10px;font:inherit;background:#fff;margin:4px 0 10px}
+button{font:inherit;border:0;border-radius:12px;padding:13px 16px;background:var(--bl);color:#fff;font-weight:600;width:100%;cursor:pointer}
+button.g{background:var(--gr)}button.o{background:#fff;color:var(--nv);border:1px solid #cdd7e8}button.r{background:var(--rd)}button.s{width:auto;padding:8px 12px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--nv);display:flex;padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:6}
+nav button{background:none;color:#b8c6e6;border-radius:10px;padding:8px 4px;font-size:12px;flex:1}nav button.on{background:#fff;color:var(--nv)}
+.sheet{position:fixed;inset:0;background:rgba(5,12,30,.55);z-index:20;display:flex;align-items:flex-end}.sheet>div{background:#fff;border-radius:20px 20px 0 0;padding:18px;width:100%;max-height:88vh;overflow:auto;max-width:720px;margin:0 auto}
+.login{max-width:380px;margin:12vh auto;padding:0 18px}.login h1{color:var(--nv);margin:0 0 4px}.err{background:#fdecea;color:var(--rd);padding:10px;border-radius:10px;margin-bottom:10px}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;background:#fdecea;color:var(--rd);font-weight:700}
+.toast{position:fixed;left:12px;right:12px;bottom:90px;background:#17233f;color:#fff;padding:12px;border-radius:12px;z-index:30;text-align:center}
+</style></head><body><div id="app"></div>
+<script>
+'use strict';
+const SB='https://fuxxdufediqhseclksxd.supabase.co',KEY='sb_publishable_hrxrQ7Oflubco0gBaop3Ug_qiQ14Mvp';
+const $=id=>document.getElementById(id),esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf=n=>String(Math.round(+n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');const G=n=>nf(n)+' GNF';
+let SES=null,ME=null,TAB='dash',PROD=[],SET={},CART=[],COUT={};
+/* ---------- accès API ---------- */
+function ses(){try{return JSON.parse(localStorage.getItem('alfa2-ses')||'null')}catch(e){return null}}
+function setSes(s){SES=s;try{s?localStorage.setItem('alfa2-ses',JSON.stringify(s)):localStorage.removeItem('alfa2-ses')}catch(e){}}
+async function auth(path,body){const r=await fetch(SB+'/auth/v1/'+path,{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error_description||j.msg||'Connexion impossible');return j}
+async function refresh(){if(!SES||!SES.refresh_token)throw new Error('Session expirée');const j=await auth('token?grant_type=refresh_token',{refresh_token:SES.refresh_token});setSes({access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+j.expires_in*1000-60000,uid:j.user.id});return SES}
+async function api(path,opt){opt=opt||{};if(SES&&SES.exp&&Date.now()>SES.exp)await refresh();
+ const h=Object.assign({apikey:KEY,Authorization:'Bearer '+(SES?SES.access_token:KEY),'Content-Type':'application/json'},opt.h||{});
+ const r=await fetch(SB+'/rest/v1/'+path,{method:opt.m||'GET',headers:h,body:opt.b?JSON.stringify(opt.b):undefined});
+ if(r.status===401&&!opt.retry){try{await refresh();return api(path,Object.assign({retry:1},opt))}catch(e){setSes(null);boot();throw e}}
+ const t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
+ if(!r.ok)throw new Error((j&&(j.message||j.hint))||('Erreur '+r.status));return j}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2600)}
+const isAdm=()=>ME&&ME.role==='Administrateur';
+const canSell=()=>ME&&(ME.role==='Administrateur'||ME.role==='Vendeur');
+/* ---------- connexion ---------- */
+function loginView(msg){$('app').innerHTML=`<div class="login"><h1>ALFA ETS~B</h1><p style="color:var(--mut);margin-top:0">Connexion à la gestion</p>${msg?'<div class="err">'+esc(msg)+'</div>':''}<label>E-mail</label><input id="em" type="email" autocomplete="username" inputmode="email"><label>Mot de passe</label><input id="pw" type="password" autocomplete="current-password"><button onclick="doLogin()">Se connecter</button></div>`;
+ $('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()})}
+async function doLogin(){try{const j=await auth('token?grant_type=password',{email:$('em').value.trim(),password:$('pw').value});setSes({access_token:j.access_token,refresh_token:j.refresh_token,exp:Date.now()+j.expires_in*1000-60000,uid:j.user.id});boot()}catch(e){loginView(e.message==='Invalid login credentials'?'E-mail ou mot de passe incorrect.':e.message)}}
+function logout(){setSes(null);ME=null;loginView()}
+async function boot(){SES=ses();if(!SES)return loginView();
+ try{const p=await api('profiles?select=id,nom,role,actif&id=eq.'+SES.uid);ME=p&&p[0];if(!ME||!ME.actif){setSes(null);return loginView('Compte non activé. Contactez l’administrateur.')}
+  const s=await api('reglages?select=cle,valeur');SET={};(s||[]).forEach(x=>SET[x.cle]=x.valeur);shell();go(TAB)}catch(e){loginView(e.message)}}
+/* ---------- coque ---------- */
+const TABS=()=>[['dash','▦','Accueil'],['stock','▤','Stock'],...(canSell()||ME.role==='Comptable'||ME.role==='Livreur'?[['ventes','◍','Ventes']]:[]),['plus','☰','Plus']];
+function shell(){$('app').innerHTML=`<header><div><b>${esc(SET.nom||'ALFA ETS~B')}</b><small>${esc(ME.nom)} · ${esc(ME.role)}</small></div></header><main id="v"></main><nav>${TABS().map(t=>`<button id="n-${t[0]}" onclick="go('${t[0]}')">${t[1]}<br>${t[2]}</button>`).join('')}</nav>`}
+async function go(t){TAB=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.id==='n-'+t));$('v').innerHTML='<p style="color:var(--mut)">Chargement…</p>';try{await({dash,stock,ventes,plus}[t]())}catch(e){$('v').innerHTML='<div class="err">'+esc(e.message)+'</div>'}}
+async function loadProd(){PROD=await api('produits?select=id,sku,nom,categorie,qte,pv&order=nom');COUT={};if(isAdm()){(await api('produit_couts?select=produit_id,pa_usd')).forEach(c=>COUT[c.produit_id]=+c.pa_usd)}}
+const cout=p=>Math.round((COUT[p.id]||0)*(+SET.taux||0));
+/* ---------- accueil ---------- */
+async function dash(){await loadProd();const d=new Date();d.setHours(0,0,0,0);const V=await api('ventes?select=id,q,pu,paye,produit_id&annulee=eq.false&date=gte.'+d.toISOString());
+ const ca=V.reduce((a,v)=>a+v.q*v.pu,0),imp=V.reduce((a,v)=>a+Math.max(0,v.q*v.pu-v.paye),0),seuil=+SET.seuil||0,low=PROD.filter(p=>p.qte<=seuil);let ben=null;
+ if(isAdm()&&V.length){const c=await api('vente_couts?select=vente_id,cr&vente_id=in.('+V.map(v=>v.id).join(',')+')'),m={};c.forEach(x=>m[x.vente_id]=+x.cr);ben=V.reduce((a,v)=>a+v.q*(v.pu-(m[v.id]||0)),0)}
+ $('v').innerHTML=`<div class="grid"><div class="card k"><span>Ventes aujourd’hui</span><b>${G(ca)}</b></div><div class="card k"><span>Nombre de ventes</span><b>${V.length}</b></div>${ben!==null?`<div class="card k"><span>Bénéfice du jour</span><b class="${ben>=0?'pos':'neg'}">${G(ben)}</b></div>`:''}<div class="card k"><span>Impayés du jour</span><b class="${imp?'neg':''}">${G(imp)}</b></div></div>
+ ${canSell()?'<button class="g" onclick="newSale()">+ Nouvelle vente</button>':''}
+ <div class="card" style="margin-top:12px"><b>Stock bas (≤ ${nf(seuil)})</b>${low.length?low.slice(0,8).map(p=>`<div class="item" onclick="go('stock')"><span>${esc(p.nom)}</span><span class="badge">${nf(p.qte)}</span></div>`).join(''):'<p style="color:var(--mut)">Aucun produit en stock bas.</p>'}</div>`}
+/* ---------- stock ---------- */
+let SQ='',SC='';
+async function stock(){await loadProd();stockDraw()}
+function stockDraw(){const cats=[...new Set(PROD.map(p=>p.categorie).filter(Boolean))].sort(),q=SQ.toLowerCase(),l=PROD.filter(p=>(!SC||p.categorie===SC)&&(!q||(p.nom+' '+(p.sku||'')).toLowerCase().includes(q)));
+ $('v').innerHTML=`<input id="sq" placeholder="Rechercher un produit…" value="${esc(SQ)}" oninput="SQ=this.value;stockList()"><select onchange="SC=this.value;stockList()"><option value="">Toutes les catégories</option>${cats.map(c=>`<option${c===SC?' selected':''}>${esc(c)}</option>`).join('')}</select>${isAdm()?'<button class="o" style="margin-bottom:10px" onclick="editProd(0)">+ Nouveau produit</button>':''}<div class="card" id="sl"></div>`;stockList()}
+function stockList(){const q=SQ.toLowerCase(),seuil=+SET.seuil||0,l=PROD.filter(p=>(!SC||p.categorie===SC)&&(!q||(p.nom+' '+(p.sku||'')).toLowerCase().includes(q)));
+ $('sl').innerHTML=l.map(p=>`<div class="item" ${isAdm()?`onclick="editProd(${p.id})"`:''}><div><b>${esc(p.nom)}</b><small>${esc(p.sku||'')} · ${G(p.pv)}${isAdm()&&p.pv>0&&cout(p)>0?' · marge '+Math.round((p.pv-cout(p))/cout(p)*100)+' %':''}</small></div><span class="${p.qte<=seuil?'badge':''}">${nf(p.qte)}</span></div>`).join('')||'<p style="color:var(--mut)">Aucun produit.</p>'}
+function sheet(h){const s=document.createElement('div');s.className='sheet';s.id='sh';s.onclick=e=>{if(e.target===s)closeSheet()};s.innerHTML='<div>'+h+'</div>';document.body.appendChild(s)}
+function closeSheet(){const s=$('sh');if(s)s.remove()}
+function editProd(id){if(!isAdm())return;const p=PROD.find(x=>x.id===id)||{nom:'',sku:'',categorie:'',qte:0,pv:0},c=(COUT[id]||0);
+ sheet(`<h2 style="margin-top:0">${id?'Modifier':'Nouveau'} produit</h2><label>Nom</label><input id="pn" value="${esc(p.nom)}"><label>Référence</label><input id="ps" value="${esc(p.sku||'')}"><label>Catégorie</label><input id="pc" value="${esc(p.categorie||'')}"><div class="grid"><div><label>Stock</label><input id="pq" type="number" inputmode="decimal" value="${p.qte}"></div><div><label>Prix de vente (GNF)</label><input id="pv" type="number" inputmode="decimal" value="${p.pv}"></div></div><label>Prix d’achat (USD)</label><input id="pa" type="number" step="0.01" inputmode="decimal" value="${c}"><button class="g" onclick="saveProd(${id})">Enregistrer</button><button class="o" style="margin-top:8px" onclick="closeSheet()">Annuler</button>`)}
+async function saveProd(id){try{const b={nom:$('pn').value.trim(),sku:$('ps').value.trim()||null,categorie:$('pc').value.trim()||null,qte:+$('pq').value||0,pv:+$('pv').value||0};if(!b.nom)return toast('Entrez un nom.');let pid=id;
+ if(id)await api('produits?id=eq.'+id,{m:'PATCH',b});else{const r=await api('produits',{m:'POST',b,h:{Prefer:'return=representation'}});pid=r[0].id}
+ await api('produit_couts',{m:'POST',b:{produit_id:pid,pa_usd:+$('pa').value||0},h:{Prefer:'resolution=merge-duplicates'}});
+ await api('journal',{m:'POST',b:{user_id:ME.id,user_nom:ME.nom,texte:(id?'Produit modifié : ':'Produit créé : ')+b.nom}});closeSheet();toast('Enregistré');stock()}catch(e){toast(e.message)}}
+/* ---------- ventes ---------- */
+async function ventes(){await loadProd();const l=await api('ventes?select=id,ticket,date,q,pu,paye,client_nom,produit_id,annulee&order=date.desc&limit=60'),nm={};PROD.forEach(p=>nm[p.id]=p.nom);
+ $('v').innerHTML=`${canSell()?'<button class="g" style="margin-bottom:10px" onclick="newSale()">+ Nouvelle vente</button>':''}<div class="card">${l.map(v=>{const t=v.q*v.pu,r=t-v.paye;return `<div class="item"><div><b>${esc(nm[v.produit_id]||'Produit')}</b><small>${new Date(v.date).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${esc(v.client_nom||'Client comptoir')} · ${nf(v.q)} × ${nf(v.pu)}${v.annulee?' · ANNULÉE':''}</small></div><div style="text-align:right"><b>${G(t)}</b>${r>0?'<small class="neg">reste '+G(r)+'</small>':''}</div></div>`}).join('')||'<p style="color:var(--mut)">Aucune vente.</p>'}</div>`}
+function newSale(){if(!canSell())return;CART=[];saleSheet()}
+function saleSheet(){const tot=CART.reduce((a,l)=>a+l.q*l.pu,0);
+ sheet(`<h2 style="margin-top:0">Nouvelle vente</h2><label>Produit</label><input id="sp" list="spl" placeholder="Choisir un produit" oninput="salePick()"><datalist id="spl">${PROD.map(p=>`<option value="${esc(p.nom)}">`).join('')}</datalist><div class="grid"><div><label>Quantité</label><input id="sq2" type="number" inputmode="decimal" value="1"></div><div><label>Prix unitaire</label><input id="su" type="number" inputmode="decimal"></div></div><button class="o" onclick="saleAdd()">+ Ajouter au panier</button>
+ <div style="margin:12px 0">${CART.map((l,i)=>`<div class="item" style="cursor:default"><div><b>${esc(l.nom)}</b><small>${nf(l.q)} × ${nf(l.pu)}</small></div><div><b>${G(l.q*l.pu)}</b> <button class="s r" onclick="CART.splice(${i},1);closeSheet();saleSheet()">✕</button></div></div>`).join('')||'<p style="color:var(--mut)">Panier vide.</p>'}</div>
+ <label>Client (facultatif)</label><input id="sc" placeholder="Client comptoir"><label>Montant payé (laisser vide = tout payé)</label><input id="sp2" type="number" inputmode="decimal" placeholder="${nf(tot)}"><div class="card k"><span>Total</span><b>${G(tot)}</b></div><button class="g" onclick="saleSave()">Valider la vente</button><button class="o" style="margin-top:8px" onclick="closeSheet()">Annuler</button>`)}
+function salePick(){const p=PROD.find(x=>x.nom===$('sp').value);if(p)$('su').value=p.pv||''}
+function saleAdd(){const p=PROD.find(x=>x.nom===$('sp').value),q=+$('sq2').value,pu=+$('su').value;if(!p)return toast('Choisissez un produit de la liste.');if(!(q>0))return toast('Quantité invalide.');if(!(pu>=0)||$('su').value==='')return toast('Entrez le prix.');
+ const deja=CART.filter(l=>l.id===p.id).reduce((a,l)=>a+l.q,0);if(q+deja>p.qte)return toast('Stock insuffisant ('+nf(p.qte)+' disponibles).');CART.push({id:p.id,nom:p.nom,q,pu});closeSheet();saleSheet()}
+async function saleSave(){if(!CART.length)return toast('Ajoutez au moins un produit.');const tot=CART.reduce((a,l)=>a+l.q*l.pu,0),raw=$('sp2').value,paye=raw===''?tot:Math.max(0,Math.min(+raw,tot)),cl=$('sc').value.trim()||null,tk='T'+Date.now().toString().slice(-8);let rest=paye;
+ const rows=CART.map(l=>{const t=l.q*l.pu,a=Math.min(t,rest);rest-=a;return{ticket:tk,produit_id:l.id,q:l.q,pu:l.pu,paye:a,client_nom:cl,vendeur_id:ME.id}});
+ try{await api('ventes',{m:'POST',b:rows});closeSheet();toast('Vente enregistrée · '+tk);CART=[];go(TAB)}catch(e){toast(e.message)}}
+/* ---------- plus ---------- */
+async function plus(){let h=`<div class="card"><b>${esc(ME.nom)}</b><small style="display:block;color:var(--mut)">${esc(ME.role)}</small></div>`;
+ if(isAdm()){const j=await api('journal?select=d,user_nom,texte&order=d.desc&limit=30');h+=`<div class="card"><b>Journal d’activité</b>${j.map(x=>`<div class="item" style="cursor:default"><div><span>${esc(x.texte)}</span><small>${new Date(x.d).toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'})} · ${esc(x.user_nom||'')}</small></div></div>`).join('')||'<p style="color:var(--mut)">Aucune activité.</p>'}</div>`}
+ $('v').innerHTML=h+'<button class="o" onclick="logout()">Se déconnecter</button>'}
+boot();
+</script></body></html>
