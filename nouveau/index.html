@@ -10,6 +10,21 @@
 #lgW p{color:var(--mut);margin:0 0 18px}#lgW .e{background:#fdecea;color:#b73a33;padding:10px 12px;border-radius:12px;margin-bottom:12px}
 .tst{position:fixed;left:12px;right:12px;bottom:96px;background:#10224d;color:#fff;padding:12px;border-radius:14px;z-index:99;text-align:center;box-shadow:0 8px 24px #0a1f4d55}
 .pcard .im{object-fit:cover}
+
+/* barre du bas : pilule noire, onglet actif blanc avec libellé, bouton menu rond */
+nav .pill{display:contents}
+@media(max-width:899px){
+nav#nav{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;border-radius:0!important;left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;padding:0!important;display:flex;align-items:center;gap:10px}
+nav#nav .pill{display:flex;flex:1;min-width:0;align-items:center;justify-content:space-between;gap:2px;background:#0a0a0b;border-radius:999px;padding:7px;box-shadow:0 10px 28px #0006}
+nav#nav .pill button{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:7px;height:48px;min-width:48px;padding:0 12px;border-radius:999px!important;background:none!important;box-shadow:none!important;color:#f2f4f7;font-size:0!important;line-height:1}
+nav#nav .pill button b{margin:0;font-size:22px;display:grid;place-items:center}
+nav#nav .pill button.on,nav#nav .pill button.on b{color:#0a0a0b!important}nav#nav .pill button.on{flex:1 1 auto;background:#fff!important;font-size:15px!important;font-weight:700;padding:0 18px;white-space:nowrap}
+nav#nav button#b-more{flex:none;width:62px;height:62px;border-radius:50%!important;background:#0a0a0b!important;color:#fff;display:grid;place-items:center;padding:0;font-size:0!important;box-shadow:0 10px 28px #0006;border:0}
+nav#nav button#b-more b{margin:0;display:grid;place-items:center}
+nav#nav button#b-more.on{background:#fff!important;color:#0a0a0b}
+nav#nav button.on:before{display:none!important}
+body{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
+}
 </style></head>
 <body class="alfa onDash">
 <div id="root"></div>
@@ -55,7 +70,7 @@ function drawHeader(){setTimeout(()=>{const c=$('cur');if(c)c.value=CUR},0);cons
  $('hdr').innerHTML=HEADER.replace(/\{\{(\w+)\}\}/g,(m,k)=>rep[k]!=null?rep[k]:'');const b=$('hBell');if(b){b.onclick=notifOpen;const nn=notifData().length,i=b.querySelector('i');if(i){i.textContent=nn;i.style.display=nn?'':'none'}b.title=nn+' notification(s)'}syncMark();const w=$('whoBtn'),ph=photo();if(w&&ph){w.style.setProperty('background','url('+ph+') center/cover','important');w.style.setProperty('color','transparent','important')}}
 function syncMark(){const b=$('syncB');if(!b)return;const ok=navigator.onLine;b.style.position='relative';b.querySelectorAll('.sk').forEach(x=>x.remove());b.insertAdjacentHTML('beforeend',ok?'<svg class="sk" viewBox="0 0 24 24" width="17" height="17" style="position:absolute;right:-3px;bottom:-3px;background:#fff;border-radius:50%"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="m6.5 12.5 4 4 7-8" fill="none" stroke="#1fa75a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>':'<svg class="sk" viewBox="0 0 24 24" width="17" height="17" style="position:absolute;right:-3px;bottom:-3px;background:#fff;border-radius:50%"><circle cx="12" cy="12" r="11" fill="#fff"/><path d="M7 7l10 10M17 7 7 17" stroke="#d33" stroke-width="3" stroke-linecap="round"/></svg>');b.title=ok?'Connecté':'Hors ligne'}
 addEventListener('online',syncMark);addEventListener('offline',syncMark);
-function shell(){$('root').innerHTML=`<div id="hdr"></div><main id="main"></main><nav id="nav" data-n="🏬 Alfa ETS~B">${['dash','wf','ventes','stock'].filter(k=>!(ME.role==='Livreur'&&k==='ventes')).map(k=>`<button id="b-${k}" onclick="go('${k}')">${NAVB[k]}</button>`).join('')}<button id="b-more" onclick="menuPlus()">${NAVB.more}</button></nav>`;drawHeader()}
+function shell(){$('root').innerHTML=`<div id="hdr"></div><main id="main"></main><nav id="nav" data-n="🏬 Alfa ETS~B"><div class="pill">${['dash','wf','ventes','stock'].filter(k=>!(ME.role==='Livreur'&&k==='ventes')).map(k=>`<button id="b-${k}" aria-label="${NAVB[k].replace(/<[^>]*>/g,'')}" onclick="go('${k}')">${NAVB[k]}</button>`).join('')}</div><button id="b-more" aria-label="Menu" onclick="menuPlus()">${NAVB.more.replace(/<\/b>.*$/s,'</b>')}</button></nav>`;drawHeader()}
 async function go(t){TAB=t;document.body.className='alfa'+(t==='dash'?' onDash':'');document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.id==='b-'+(['dash','wf','stock','ventes'].includes(t)?t:'more')));const m=$('main');m.innerHTML='<p style="color:var(--mut);padding:20px 4px">Chargement…</p>';
  try{await Promise.all([loadProd(),loadVnt(),loadCli()]);drawHeader();await({prim,dash,wf,stock,ventes,cli,dep,journal,caisse,bout,dettes,devis,achats,frais,banque,inv,rap,equipe,reg}[t]())}catch(e){m.innerHTML='<div class="alert" style="margin:12px 0">'+esc(e.message)+'</div>'}window.scrollTo(0,0)}
 async function loadProd(){PROD=await api('produits?select=id,sku,nom,categorie,qte,pv&order=nom&limit=2000');if(LIEU){const m={};(await api('stock_boutique?select=produit_id,qte&boutique_id=eq.'+LIEU+'&limit=5000')).forEach(x=>m[x.produit_id]=+x.qte);PROD.forEach(p=>{p.qteM=p.qte;p.qte=m[p.id]||0})}COUT={};if(isAdm()){(await api('produit_couts?select=produit_id,pa_usd&limit=2000')).forEach(c=>COUT[c.produit_id]=+c.pa_usd)}}
