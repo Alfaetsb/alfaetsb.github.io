@@ -11,20 +11,21 @@
 .tst{position:fixed;left:12px;right:12px;bottom:96px;background:#10224d;color:#fff;padding:12px;border-radius:14px;z-index:99;text-align:center;box-shadow:0 8px 24px #0a1f4d55}
 .pcard .im{object-fit:cover}
 
-/* barre du bas : pilule noire, onglet actif blanc avec libellé, bouton menu rond */
+/* barre du bas : pilule bleu marine, onglet actif blanc avec libellé, bouton menu rond */
 nav .pill{display:contents}
 @media(max-width:899px){
-nav#nav{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;border-radius:0!important;left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;padding:0!important;display:flex;align-items:center;gap:10px}
-nav#nav .pill{display:flex;flex:1;min-width:0;align-items:center;justify-content:space-between;gap:2px;background:#0a0a0b;border-radius:999px;padding:7px;box-shadow:0 10px 28px #0006}
-nav#nav .pill button{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:7px;height:48px;min-width:48px;padding:0 12px;border-radius:999px!important;background:none!important;box-shadow:none!important;color:#f2f4f7;font-size:0!important;line-height:1}
+nav#nav{background:none!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;border-radius:0!important;left:12px!important;right:12px!important;bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;padding:0!important;display:flex;align-items:center;gap:8px}
+nav#nav .pill{display:flex;flex:1;min-width:0;align-items:center;justify-content:space-between;gap:2px;background:#0a1f4d;border-radius:999px;padding:6px;box-shadow:0 10px 28px #0a1f4d88}
+nav#nav .pill button{flex:0 0 auto;display:flex;align-items:center;justify-content:center;gap:7px;height:46px;min-width:42px;padding:0 10px;border-radius:999px!important;background:none!important;box-shadow:none!important;color:#f2f4f7;font-size:0!important;line-height:1}
 nav#nav .pill button b{margin:0;font-size:22px;display:grid;place-items:center}
-nav#nav .pill button.on,nav#nav .pill button.on b{color:#0a0a0b!important}nav#nav .pill button.on{flex:1 1 auto;background:#fff!important;font-size:15px!important;font-weight:700;padding:0 18px;white-space:nowrap}
-nav#nav button#b-more{flex:none;width:62px;height:62px;border-radius:50%!important;background:#0a0a0b!important;color:#fff;display:grid;place-items:center;padding:0;font-size:0!important;box-shadow:0 10px 28px #0006;border:0}
+nav#nav .pill button.on,nav#nav .pill button.on b{color:#0a1f4d!important}nav#nav .pill button.on{flex:1 1 auto;background:#fff!important;font-size:14px!important;font-weight:700;padding:0 12px;gap:6px;white-space:nowrap}
+nav#nav button#b-more{flex:none;width:58px;height:58px;border-radius:50%!important;background:#0a1f4d!important;color:#fff;display:grid;place-items:center;padding:0;font-size:0!important;box-shadow:0 10px 28px #0a1f4d88;border:0}
 nav#nav button#b-more b{margin:0;display:grid;place-items:center}
-nav#nav button#b-more.on{background:#fff!important;color:#0a0a0b}
+nav#nav button#b-more.on{background:#fff!important;color:#0a1f4d}
 nav#nav button.on:before{display:none!important}
 body{padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important}
 }
+@media(max-width:370px){nav#nav .pill button{min-width:36px;padding:0 6px!important}nav#nav .pill button.on{font-size:13px!important;padding:0 10px!important}nav#nav button#b-more{width:52px;height:52px}}
 </style></head>
 <body class="alfa onDash">
 <div id="root"></div>
