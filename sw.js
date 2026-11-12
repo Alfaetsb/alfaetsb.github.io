@@ -3,7 +3,7 @@
    - Fichiers statiques du même site : cache d'abord, mise à jour en arrière-plan
    - Requêtes d'autres sites (synchronisation cloud, API) : jamais interceptées
    Pour publier une nouvelle version : changer VERSION ci-dessous. */
-var VERSION = 'alfa-ets-b-v1';
+var VERSION = 'alfa-ets-b-v2';
 var CACHE = VERSION;
 var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.png'];
 
@@ -33,11 +33,13 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
+  /* version.json : toujours depuis le réseau (détection des mises à jour) */
+  if (url.pathname.slice(-12) === 'version.json') return;
 
   /* Pages : réseau d'abord */
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') >= 0) {
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch(req, { cache: 'no-cache' }).then(function (res) {
         if (res && res.ok) { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(req, copy); }); }
         return res;
       }).catch(function () {
