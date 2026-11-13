@@ -386,7 +386,7 @@ boot();
 </script><script id="alfa-upd">
 /* v148 — mise à jour automatique : détecte une nouvelle version publiée et recharge l'application */
 (function(){
-var BUILD='20261113193230',busy=false;
+var BUILD='20261113201541',busy=false;
 function ban(){if(document.getElementById('updB'))return;var b=document.createElement('div');b.id='updB';b.style.cssText='position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:100000;background:#0a1f4d;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font:600 14px system-ui,sans-serif;box-shadow:0 8px 24px #0006';b.innerHTML='<span style="flex:1">Nouvelle version disponible</span><button style="border:0;border-radius:10px;padding:9px 14px;background:#fff;color:#0a1f4d;font:700 14px system-ui,sans-serif" onclick="location.reload()">Mettre à jour</button>';(document.body||document.documentElement).appendChild(b)}
 function go(){var a=document.activeElement,typing=a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName),sheet=document.querySelector('#sheet.open,.sheet.open');if(typing||sheet){ban();return}location.reload()}
 function check(){if(busy||document.hidden||navigator.onLine===false)return;busy=true;
