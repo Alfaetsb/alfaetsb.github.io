@@ -665,3 +665,27 @@ body.dk .peTy .achip.pnew{background:#14233f!important;color:#8db8ff!important;b
 .peV{font-size:16px!important;line-height:1.5!important;border-radius:20px!important;padding:14px 16px!important}
 .peFr{border-radius:18px;padding:10px 12px}
 body.dk .peCh .achip{background:#16203a!important;color:#e8f0ff!important;border-color:#2a3a5c!important}body.dk .peCh .achip.on{background:linear-gradient(#0b66dc,#0a4fbd)!important;color:#fff!important}body.dk .peIt{background:#16203a!important;border-color:#2a3a5c!important}body.dk .peIt .t b,body.dk .peTr{color:#e8f0ff}body.dk .peBd{background:#243453;color:#fff}body.dk .peIt.on{background:#14233f!important}
+#rpOv{position:fixed;inset:0;z-index:9500;background:#f1f5fd;display:flex;flex-direction:column}
+.rpTop{display:flex;align-items:center;gap:14px;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 8px}.rpTop h1{margin:0;font-size:28px;font-weight:800;color:#0f1c3d;letter-spacing:-.3px}
+.rpX{flex:none;width:44px;height:44px;border-radius:14px;border:1.5px solid #dce6f4;background:#fff;color:#0f1c3d;display:grid;place-items:center;padding:0}
+.rpBd{flex:1;overflow-y:auto;padding:8px 12px 20px}
+.rpHero{display:flex;align-items:center;gap:14px;background:#fff1dc;border:1.5px solid #f2d9a6;border-radius:22px;padding:15px 16px;margin-bottom:14px}.rpHero i{flex:none;width:52px;height:52px;border-radius:16px;background:#f2a63b;display:grid;place-items:center}.rpHero div{flex:1;min-width:0}.rpHero b{display:block;font-size:19px;font-weight:800;color:#5a3500}.rpHero span{display:block;font-size:14px;color:#8a5a12;line-height:1.35;margin-top:2px}.rpHero em{font-style:normal;font-size:34px;font-weight:800;color:#5a3500;flex:none}
+.rpC{background:#fff;border:1.5px solid #e1e9f5;border-radius:22px;padding:16px;margin-bottom:12px;cursor:pointer}
+.rpH{display:flex;align-items:center;gap:14px}.rpH b{display:block;font-size:20px;font-weight:800;color:#0f1c3d}.rpH span:not(.rpK){display:block;font-size:15.5px;color:#5f6e87;margin-top:2px}
+.rpK{flex:none;width:30px;height:30px;border-radius:9px;border:2px solid #b9c8e0;background:#fff;display:grid;place-items:center}.rpK.on{background:#1f5fdc;border-color:#1f5fdc}
+.rpR{display:flex;align-items:center;gap:16px;margin-top:14px}.rpS{flex:1;min-width:0}.rpS>span{display:block;font-size:16px;font-weight:600;color:#5f6e87;margin-bottom:8px}
+.rpBar{height:11px;border-radius:6px;background:#e8eef9;overflow:hidden}.rpBar i{display:block;height:100%;background:#f2a63b;border-radius:6px}
+.rpQ{flex:none;min-width:95px;background:#e2ebfd;border-radius:18px;padding:10px 12px;text-align:center}.rpQ b{display:block;font-size:30px;font-weight:800;color:#1f4fc4;line-height:1.05}.rpQ small{font-size:14px;font-weight:700;color:#1f4fc4}
+.rpBt{display:flex;gap:12px;padding:12px 12px calc(12px + env(safe-area-inset-bottom,0px));background:#f8faff;border-top:1px solid #dfe7f4}
+.rpWa{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;height:58px;border:0;border-radius:20px;background:#16a56a;color:#fff;font-size:20px;font-weight:800;box-shadow:0 10px 22px rgba(22,165,106,.3)}.rpWa:disabled,.rpCp:disabled{opacity:.45}
+.rpCp{flex:none;width:58px;height:58px;border-radius:20px;border:1.5px solid #cdd9ec;background:#fff;color:#0f1c3d;display:grid;place-items:center;padding:0}
+body.rpOpen #nav,body.rpOpen #hdr{visibility:hidden}
+body.dk #rpOv{background:#0d1526}body.dk .rpTop h1,body.dk .rpH b{color:#e8f0ff}body.dk .rpC,body.dk .rpX,body.dk .rpCp{background:#16203a;border-color:#2a3a5c;color:#e8f0ff}body.dk .rpBt{background:#101a30;border-color:#22304b}
+#rpOv .rpH{justify-content:flex-start!important}#rpOv .rpH>div{flex:1;min-width:0;text-align:left!important}#rpOv .rpK svg{width:20px!important;height:20px!important}
+#rpOv .rpR{justify-content:flex-start!important}#rpOv .rpS>span{white-space:nowrap;text-align:left}#rpOv .rpHero div{text-align:left}#rpOv .rpHero i svg,#rpOv .rpWa svg,#rpOv .rpCp svg,#rpOv .rpX svg{flex:none}
+#rpOv .rpHero i svg{width:30px!important;height:30px!important}#rpOv .rpWa svg,#rpOv .rpCp svg{width:26px!important;height:26px!important}#rpOv .rpX svg{width:24px!important;height:24px!important}
+#rpOv .rpHero b{white-space:normal}
+#rpOv .rpTop{justify-content:flex-start!important}#rpOv .rpTop h1{text-align:left!important;margin:0!important}
+#rpOv .rpK{display:flex!important;align-items:center;justify-content:center}#rpOv .rpS{display:block!important}#rpOv .rpS>span{display:block!important}
+#rpOv .rpHero{justify-content:flex-start!important}#rpOv .rpHero em{margin-left:auto}#rpOv .rpQ{display:block}
+#rpOv .rpHero b{font-size:17.5px;line-height:1.2}#rpOv .rpHero span{font-size:13.5px}#rpOv .rpHero i{width:48px;height:48px}
