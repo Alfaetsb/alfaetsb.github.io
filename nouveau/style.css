@@ -644,3 +644,11 @@ body.dk #t-dash .grid .k:not(.gold),body.dk #t-dash .dbS>button{background:var(-
 .peM{background:#f1f4f9;border-radius:12px;padding:10px 12px;margin-top:8px;font-size:14px;color:#51607a}
 .peCol{margin:22px 0 4px;font-size:19px;display:flex;align-items:center;gap:8px}.peCol::before{content:"";width:4px;height:20px;border-radius:5px;background:linear-gradient(#2f86f0,#0b5fd0)}
 body.dk .peIm{background:#1b2740}body.dk .peV{background:#14233f;border-color:#244a86;color:#cfe0ff}body.dk .peM{background:#16203a;color:#9fb0cf}body.dk .sx{background:#16203a;color:#fff}body.dk .peTy .pnew{background:#101a30}body.dk .peIt.on{background:#14233f}
+.peTy{gap:10px 8px!important}
+.peTy .achip{background:#fff!important;color:#0f2556!important;border:2px solid #ccd8e8!important;box-shadow:none!important;border-radius:999px!important;padding:8px 17px!important;font-size:16px!important;font-weight:700!important;line-height:1.25!important;min-height:0!important;height:auto!important}
+.peTy .achip.on{background:#145bd7!important;border-color:#145bd7!important;color:#fff!important}
+.peTy .achip.pnew{background:#eaf2ff!important;color:#145bd7!important;border:2px dashed #145bd7!important}
+body.dk .peTy .achip{background:#16203a!important;color:#e8f0ff!important;border-color:#2a3a5c!important}
+body.dk .peTy .achip.on{background:#145bd7!important;color:#fff!important}
+body.dk .peTy .achip.pnew{background:#14233f!important;color:#8db8ff!important;border-color:#2f7cf0!important}
+.peTy{gap:9px 7px!important}.peTy .achip{padding:6px 13px!important;font-size:14.5px!important}
