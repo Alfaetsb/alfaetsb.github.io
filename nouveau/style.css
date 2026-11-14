@@ -595,3 +595,4 @@ body.alfa.dk #t-colis .mxCard{background:linear-gradient(180deg,#132a5e,#0f2150)
 body.alfa.dk #t-colis .mxRow b,body.alfa.dk #t-colis .mxBot b{color:#fff}
 body.alfa.dk #t-colis .mxBot{color:#b6c6e6;border-top-color:#2f6fe6}
 body.alfa.dk #t-colis .mxI{border-color:#132a5e}
+.acBar{display:flex;height:16px;border-radius:9px;overflow:hidden;background:var(--line);margin:8px 0 6px}.acBar i{display:block;height:100%}.acLg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--mut)}.acLg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}.acPv{border:1px solid var(--line);border-radius:14px;padding:4px 12px;margin:8px 0}.acPv div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:14px}.acPv div+div{border-top:1px solid var(--line)}.acPv div b{text-align:right}
