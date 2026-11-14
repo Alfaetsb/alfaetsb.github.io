@@ -652,3 +652,16 @@ body.dk .peTy .achip{background:#16203a!important;color:#e8f0ff!important;border
 body.dk .peTy .achip.on{background:#145bd7!important;color:#fff!important}
 body.dk .peTy .achip.pnew{background:#14233f!important;color:#8db8ff!important;border-color:#2f7cf0!important}
 .peTy{gap:9px 7px!important}.peTy .achip{padding:6px 13px!important;font-size:14.5px!important}
+.peB{padding:14px 12px!important;border-radius:20px!important}.peB>b{font-size:19px!important}.peB p{font-size:14px!important;line-height:1.45!important;margin:6px 0 10px!important}
+.peTr{display:flex;align-items:center;gap:8px;font-size:18px!important;color:#0f2556}.peTr svg{flex:none}
+.peCh{gap:10px 8px!important;margin:10px 0!important}
+.peCh .achip{background:#fff!important;color:#0f2556!important;border:1.5px solid #dce6f4!important;border-radius:18px!important;padding:12px 19px!important;font-size:16px!important;font-weight:700!important;box-shadow:0 3px 9px rgba(20,60,130,.1)!important;min-height:0!important;height:auto!important}
+.peCh .achip.on{background:linear-gradient(#0b66dc,#0a4fbd)!important;color:#fff!important;border-color:#0a55c8!important;box-shadow:0 7px 16px rgba(11,100,216,.35)!important}
+.peL{padding:8px 12px!important;border-radius:20px!important}
+.peIt{background:#fff!important;border:1.5px solid #dce6f4!important;border-radius:20px!important;padding:14px 16px!important;display:flex;align-items:center;gap:10px;margin:8px 0!important}.peIt .t{flex:1;min-width:0}.peIt .t b{display:block;font-size:17.5px;color:#0f2556}.peIt .t span{display:block;font-size:14px;color:#5f6e87;line-height:1.4;margin-top:4px}
+.peIt.on{border-color:#2f7cf0!important;background:#f4f8ff!important}
+.peBd{flex:none;width:46px;height:46px;border-radius:50%;background:#e7eef8;color:#0f2556;display:grid;place-items:center;font-size:20px;font-weight:700}
+.peL .empty{border:1.5px dashed #c5d3e8;border-radius:20px;margin:8px 0;padding:22px 14px!important;text-align:center;font-size:17px;color:#5f6e87;line-height:1.5}
+.peV{font-size:16px!important;line-height:1.5!important;border-radius:20px!important;padding:14px 16px!important}
+.peFr{border-radius:18px;padding:10px 12px}
+body.dk .peCh .achip{background:#16203a!important;color:#e8f0ff!important;border-color:#2a3a5c!important}body.dk .peCh .achip.on{background:linear-gradient(#0b66dc,#0a4fbd)!important;color:#fff!important}body.dk .peIt{background:#16203a!important;border-color:#2a3a5c!important}body.dk .peIt .t b,body.dk .peTr{color:#e8f0ff}body.dk .peBd{background:#243453;color:#fff}body.dk .peIt.on{background:#14233f!important}
