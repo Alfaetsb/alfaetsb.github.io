@@ -689,3 +689,6 @@ body.dk #rpOv{background:#0d1526}body.dk .rpTop h1,body.dk .rpH b{color:#e8f0ff}
 #rpOv .rpK{display:flex!important;align-items:center;justify-content:center}#rpOv .rpS{display:block!important}#rpOv .rpS>span{display:block!important}
 #rpOv .rpHero{justify-content:flex-start!important}#rpOv .rpHero em{margin-left:auto}#rpOv .rpQ{display:block}
 #rpOv .rpHero b{font-size:17.5px;line-height:1.2}#rpOv .rpHero span{font-size:13.5px}#rpOv .rpHero i{width:48px;height:48px}
+#rpOv .rpTop h1{font-size:22px}#rpOv .rpHero b{font-size:15px}#rpOv .rpHero span{font-size:12px}#rpOv .rpHero em{font-size:26px}
+#rpOv .rpH b{font-size:16px}#rpOv .rpH span:not(.rpK){font-size:13px}#rpOv .rpS>span{font-size:13.5px}#rpOv .rpQ{min-width:84px}#rpOv .rpQ b{font-size:24px}#rpOv .rpQ small{font-size:12px}
+#rpOv .rpWa{font-size:16px;height:52px;border-radius:18px}#rpOv .rpCp{width:52px;height:52px;border-radius:18px}
