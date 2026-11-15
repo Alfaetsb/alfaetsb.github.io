@@ -441,7 +441,7 @@ async function catCore(o,X){const L0=X.L0,clT=X.clT,doc=await L0.PDFDocument.cre
  const head=()=>{lg(M,H-34,24);T('Catalogue '+date,W-M,H-26,{s:8,col:MUT,r:1});R(0,H-42,W,1.6,GRN);R(0,0,W,0.5,LINE);T([tel?'WhatsApp · '+tel:''].join(''),M,18,{s:7.5,col:MUT});T(nom,W/2,18,{s:7.5,col:MUT,c:1});T(String(pn),W-M,18,{s:8,b:1,col:INK,r:1})};
  page=som;head();
  /* produits */
- const CW=(W-2*M-20)/3,PH=o.ph?92:0,CH=o.ph?176:84,BOT=44;let y=0,col=0;const start={},nums={};cats.forEach((c,i)=>nums[c]=String(i+1).padStart(2,'0'));
+ const CW=(W-2*M-20)/3,PH=o.ph?92:0,CH=o.ph?(o.np?140:176):(o.np?66:84),BOT=44;let y=0,col=0;const start={},nums={};cats.forEach((c,i)=>nums[c]=String(i+1).padStart(2,'0'));
  const newPage=()=>{page=doc.addPage([W,H]);pn++;head();y=H-62;col=0};
  const band=(cat,sfx)=>{RR(M,y-24,24,24,6,GRN);T(nums[cat],M+12,y-16.5,{s:10,b:1,col:WHITE,c:1});T(cat+(sfx||''),M+34,y-18,{s:17,b:1,col:NAVY});const cw=tw(cat+(sfx||''),17,FB),lbl=G0[cat].length+' article'+(G0[cat].length>1?'s':'');RR(M+34+cw+10,y-20,tw(lbl,7,F)+16,14,7,SOFT);T(lbl,M+34+cw+18,y-16,{s:7,col:MUT});R(M+34+cw+10+tw(lbl,7,F)+26,y-12,W-M-(M+34+cw+10+tw(lbl,7,F)+26),0.6,LINE);y-=36};
  newPage();
@@ -449,19 +449,19 @@ async function catCore(o,X){const L0=X.L0,clT=X.clT,doc=await L0.PDFDocument.cre
   for(const p of G0[cat]){if(y-CH<BOT){newPage();band(cat,' (suite)')}
    const x=M+col*(CW+10),yt=y,yb=yt-CH;RR(x,yb,CW,CH,6,WHITE,LINE);
    if(o.ph){R(x+.5,yt-PH-.5,CW-1,PH,SOFT);const im=imgs[p.id];if(im){const s=Math.min((CW-14)/im.w,(PH-10)/im.h),w=im.w*s,h=im.h*s;page.drawImage(im.im,{x:x+(CW-w)/2,y:yt-PH+(PH-h)/2,width:w,height:h})}}
-   const ty=yt-PH-(o.ph?14:16);wrap(p.nom,8.8,FB,CW-16,2).forEach((l,j)=>T(l,x+8,ty-j*10.5,{s:8.8,b:1}));if(p.sku)T('Réf. '+p.sku,x+8,yb+(o.gr&&p.pg>0&&p.qg>0?50:26)+(o.ph?0:-4),{s:6.5,col:MUT});
-   const by=yb+(o.gr&&p.pg>0&&p.qg>0?22:0)+1;R(x+.5,by,CW-1,23,NAVY);if(o.np){SP('PRIX SUR DEMANDE',x+8,by+8.5,6.4,1,C('#4fd16a'),1);T('WhatsApp',x+CW-8,by+8.5,{s:7,col:C('#b9c8ea'),r:1})}else{SP('PRIX',x+8,by+8.5,6,1.2,C('#4fd16a'),1);const ps=N(p.pv);T('GNF',x+CW-8,by+8.5,{s:6,col:C('#b9c8ea'),r:1});T(ps,x+CW-8-tw('GNF',6)-3,by+7.5,{s:11.5,b:1,col:WHITE,r:1})}
+   const ty=yt-PH-(o.ph?14:16);wrap(p.nom,8.8,FB,CW-16,2).forEach((l,j)=>T(l,x+8,ty-j*10.5,{s:8.8,b:1}));if(p.sku)T('Réf. '+p.sku,x+8,o.np?yb+10:yb+(o.gr&&p.pg>0&&p.qg>0?50:26)+(o.ph?0:-4),{s:6.5,col:MUT});
+   const by=yb+(o.gr&&p.pg>0&&p.qg>0?22:0)+1;if(!o.np){R(x+.5,by,CW-1,23,NAVY);SP('PRIX',x+8,by+8.5,6,1.2,C('#4fd16a'),1);const ps=N(p.pv);T('GNF',x+CW-8,by+8.5,{s:6,col:C('#b9c8ea'),r:1});T(ps,x+CW-8-tw('GNF',6)-3,by+7.5,{s:11.5,b:1,col:WHITE,r:1})}
    if(o.gr&&p.pg>0&&p.qg>0){R(x+.5,yb+1,CW-1,22,GRNL);SP('GROS · DÈS '+X.nf(p.qg)+' PCS',x+8,yb+9,5.8,.8,GRND,1);T('GNF',x+CW-8,yb+9,{s:6,col:GRND,r:1});T(N(p.pg),x+CW-8-tw('GNF',6)-3,yb+8,{s:10,b:1,col:GRND,r:1})}
    if(col===2){y-=CH+10;col=0}else col++}}
  /* sommaire */
  page=som;T('Sommaire',M,H-100,{s:28,b:1,col:NAVY});R(M,H-112,38,3,GRN);
  const qs=[...new Set(cats.flatMap(c=>G0[c]).filter(p=>o.gr&&p.pg>0&&p.qg>0).map(p=>p.qg))],qtxt=qs.length===1?' Prix de gros dès '+X.nf(qs[0])+' pièces par référence.':(qs.length?' Prix de gros selon la quantité indiquée sur chaque référence.':'');
- wrap(total+' référence'+(total>1?'s':'')+', classées par famille. '+(o.np?'Prix et disponibilités communiqués sur demande par WhatsApp : sans engagement.':'Tous les prix sont en francs guinéens (GNF).'+qtxt),9,F,W-2*M-40,3).forEach((l,i)=>T(l,M,H-134-i*12,{s:9,col:MUT}));
+ wrap(total+' référence'+(total>1?'s':'')+', classées par famille. '+(o.np?'Prix et disponibilités sur demande, sans engagement : contactez-nous sur WhatsApp.':'Tous les prix sont en francs guinéens (GNF).'+qtxt),9,F,W-2*M-40,3).forEach((l,i)=>T(l,M,H-134-i*12,{s:9,col:MUT}));
  let sy=H-198;cats.forEach(c=>{const pv=G0[c].map(p=>p.pv),mn=Math.min(...pv),mx=Math.max(...pv);RR(M,sy-10,26,26,6,GRN);T(nums[c],M+13,sy-1,{s:10,b:1,col:WHITE,c:1});T(c,M+42,sy-1,{s:13,b:1,col:NAVY});T(G0[c].length+' article'+(G0[c].length>1?'s':'')+(o.np?'':' · de '+N(mn)+(mx>mn?' à '+N(mx):'')+' GNF'),M+190,sy-0.5,{s:8,col:MUT});T('p. '+start[c],W-M,sy-1,{s:10,b:1,col:INK,r:1});R(M,sy-22,W-2*M,0.6,LINE);sy-=50});
  return {bytes:await doc.save(),name:'Catalogue_'+clT(nom).replace(/[^A-Za-z0-9]+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf',n:total}}
 
 window.dlCat=async function(a){var old=a.innerHTML;if(a.dataset.busy)return;a.dataset.busy=1;a.style.opacity='.7';a.textContent='Préparation du catalogue…';
- try{var tel=C.tel||(C.whatsapp?fmtWa(C.whatsapp):''),r=await catCore({ph:true,gr:false,np:true,cat:''},{L0:await lib(),clT:clT,prods:P.map(function(x){return {id:x[1],nom:x[2],sku:String(x[3]||'').replace(/^Réf\.\s*/,''),categorie:x[0],pv:0}}),img:img,shop:'Alfa ETS~B',tel:tel,adr:C.adresse,msg:'Votre partenaire en solutions métalliques',nf:function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')},logo:'logo-cat.png'});
+ try{var tel=C.tel||(C.whatsapp?fmtWa(C.whatsapp):'622939259'),r=await catCore({ph:true,gr:false,np:true,cat:''},{L0:await lib(),clT:clT,prods:P.map(function(x){return {id:x[1],nom:x[2],sku:String(x[3]||'').replace(/^Réf\.\s*/,''),categorie:x[0],pv:0}}),img:img,shop:'Alfa ETS~B',tel:tel,adr:(C.adresse&&C.adresse!=='Conakry, Guinée')?C.adresse:'Sonfonia SOS',msg:'Votre partenaire en solutions métalliques.',nf:function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')},logo:'logo-cat.png'});
   var bl=new Blob([r.bytes],{type:'application/pdf'}),u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download='Catalogue_Alfa_ETS_B.pdf';document.body.appendChild(l);l.click();setTimeout(function(){URL.revokeObjectURL(u);l.remove()},3000)}
  catch(e){alert(e&&e.message||String(e))}
  a.innerHTML=old;a.style.opacity='';delete a.dataset.busy};
