@@ -192,6 +192,7 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
   <div class="cta">
    <a class="btn wa" href="#devis" onclick="qOpen();return false"><svg class="i" viewBox="0 0 24 24"><path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.5-4.3a8.5 8.5 0 1 1 15.5-4.6z"/></svg>Recevoir mes prix sur WhatsApp ›</a>
    <a class="btn ghost" href="#produits"><svg class="i" viewBox="0 0 24 24"><path d="M4 5h6a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H4zM20 5h-6a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h6z"/></svg>Découvrir le catalogue ›</a>
+   <a class="btn ghost" href="#catalogue-pdf" onclick="dlCat(this);return false"><svg class="i" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 20h16"/></svg>Télécharger notre catalogue</a>
   </div>
  </div></div>
 </div>
@@ -205,7 +206,7 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
 
 <section id="produits"><div class="w">
  <div class="sh"><div><span class="kick">Catalogue</span><h2>Le bon accessoire pour chaque finition</h2><p>Touchez un produit : vous recevez son prix et sa disponibilité directement sur WhatsApp, sans engagement.</p></div>
- <a class="btn out" href="#devis" onclick="qOpen();return false">🧾 Composer mon devis ›</a></div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn out" href="#catalogue-pdf" onclick="dlCat(this);return false">📄 Télécharger le catalogue (PDF)</a><a class="btn out" href="#devis" onclick="qOpen();return false">🧾 Composer mon devis ›</a></div></div>
  <div class="chips" id="fil"></div>
  <div class="grid" id="cat"></div>
  <div class="pager" id="pg"></div>
@@ -397,6 +398,74 @@ var ld={"@context":"https://schema.org","@type":"HardwareStore","name":"Alfa ETS
 if(C.tel)ld.telephone=C.tel;if(C.email)ld.email=C.email;
 var s=document.createElement('script');s.type='application/ld+json';s.textContent=JSON.stringify(ld);document.head.appendChild(s);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+<script id="dl-catalogue">
+/* Télécharger notre catalogue : brochure PDF générée à la demande (sans prix) */
+(function(){
+var CP='€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ';
+function clT(t){t=String(t==null?'':t).replace(/[\u00a0\u202f\u2009]/g,' ').replace(/−/g,'-').replace(/³/g,'3');var o='';for(var k=0;k<t.length;k++){var c=t[k],n=c.charCodeAt(0);if((n>=32&&n<127)||(n>=160&&n<=255)||CP.indexOf(c)>=0)o+=c;else if(n>=0xD800&&n<=0xDBFF)k++}return o.replace(/\s+/g,' ').trim()}
+var LIBS=['pdf-lib.min.js','https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js','https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js'];
+function lib(){return new Promise(function(res,rej){if(window.PDFLib)return res(window.PDFLib);var i=0;(function nx(){if(i>=LIBS.length)return rej(new Error('Impossible de charger le module PDF. Vérifiez votre connexion.'));var s=document.createElement('script');s.src=LIBS[i++];s.onload=function(){window.PDFLib?res(window.PDFLib):nx()};s.onerror=function(){s.remove();nx()};document.head.appendChild(s)})()})}
+async function img(p,doc){try{var x=P.filter(function(y){return y[1]===p.id})[0];if(!x||x[4]==='')return null;var url=x[4]===undefined?'img-'+x[1]+'.webp':x[4],bl=await (await fetch(url)).blob(),bm=await createImageBitmap(bl),k=Math.min(1,360/Math.max(bm.width,bm.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(bm.width*k));c.height=Math.max(1,Math.round(bm.height*k));var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);g.drawImage(bm,0,0,c.width,c.height);var b64=c.toDataURL('image/jpeg',.82).split(',')[1],bin=atob(b64),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return {im:await doc.embedJpg(u),w:c.width,h:c.height}}catch(e){return null}}
+async function catCore(o,X){const L0=X.L0,clT=X.clT,doc=await L0.PDFDocument.create(),nom=X.shop||'Alfa ETS~B';doc.setTitle(clT('Catalogue '+nom));
+ const F=await doc.embedFont(L0.StandardFonts.Helvetica),FB=await doc.embedFont(L0.StandardFonts.HelveticaBold),C=h=>L0.rgb(parseInt(h.substr(1,2),16)/255,parseInt(h.substr(3,2),16)/255,parseInt(h.substr(5,2),16)/255),
+ NAVY=C('#0a1f4d'),GRN=C('#1fa83a'),GRNL=C('#e6f5e8'),GRND=C('#157a2a'),INK=C('#0f1c3a'),MUT=C('#6a7890'),LINE=C('#dfe6f0'),SOFT=C('#eef2f7'),WHITE=C('#ffffff');
+ const W=595.28,H=841.89,M=32,tw=(s,z,f)=>(f||F).widthOfTextAtSize(clT(s),z),fit=(s,z,f,w)=>{s=clT(s);if(tw(s,z,f)<=w)return s;while(s.length>1&&tw(s+'…',z,f)>w)s=s.slice(0,-1);return s+'…'},
+ wrap=(s,z,f,w,max)=>{const ws=clT(s).split(' '),L=[];let c='';ws.forEach(x=>{const t=c?c+' '+x:x;if(tw(t,z,f)<=w)c=t;else{if(c)L.push(c);c=x}});if(c)L.push(c);if(L.length>max){L.length=max;L[max-1]=fit(L[max-1]+'…',z,f,w)}return L};
+ let page;const T=(s,x,y,p)=>{p=p||{};const z=p.s||10,f=p.b?FB:F;let q=clT(s);if(p.w)q=fit(q,z,f,p.w);const px=p.r?x-tw(q,z,f):p.c?x-tw(q,z,f)/2:x;page.drawText(q,{x:px,y,size:z,font:f,color:p.col||INK})},
+ R=(x,y,w,h,col)=>page.drawRectangle({x,y,width:w,height:h,color:col}),
+ RR=(x,y,w,h,r,col,bc)=>{const p=`M${r},0 H${w-r} Q${w},0 ${w},${r} V${h-r} Q${w},${h} ${w-r},${h} H${r} Q0,${h} 0,${h-r} V${r} Q0,0 ${r},0 Z`;page.drawSvgPath(p,{x,y:y+h,color:col,borderColor:bc,borderWidth:bc?1:0})},
+ SP=(s,x,y,z,sp,col,b)=>{let cx=x;const f=b?FB:F;clT(s).split('').forEach(ch=>{page.drawText(ch,{x:cx,y,size:z,font:f,color:col});cx+=f.widthOfTextAtSize(ch,z)+sp})},
+ tel=X.tel||'',adr=X.adr||'',date=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'}),DATE=date.toUpperCase(),
+ N=n=>X.nf(Math.round(+n||0)),
+ price=(n,x,y,sz,col,gz)=>{const s=N(n);T(s,x,y,{s:sz,b:1,col,r:1});return 0};
+ let logo=null;try{const r=await fetch(X.logo);logo=await doc.embedPng(new Uint8Array(await r.arrayBuffer()))}catch(e){}
+ const lg=(x,y,h)=>{if(logo){const w=h*logo.width/logo.height;page.drawImage(logo,{x,y,width:w,height:h});return w}T(nom,x,y+h/3,{s:h*.5,b:1,col:NAVY});return tw(nom,h*.5,FB)};
+ /* regroupement */
+ const ord=['Boules','Rosaces','Coudes','Tubes','Supports','Décorations','Potelets','Fixations','Outillage','Autres'],cmp=(a,b)=>{const i=ord.indexOf(a),j=ord.indexOf(b);return (i<0?99:i)-(j<0?99:j)||a.localeCompare(b)},G0={};
+ X.prods.filter(p=>(o.np||p.pv>0)&&(!o.cat||(p.categorie||'Autres')===o.cat)).forEach(p=>(G0[p.categorie||'Autres']=G0[p.categorie||'Autres']||[]).push(p));
+ const cats=Object.keys(G0).sort(cmp);cats.forEach(c=>G0[c].sort((a,b)=>String(a.sku||'').localeCompare(String(b.sku||''),undefined,{numeric:true})||a.nom.localeCompare(b.nom)));
+ const total=cats.reduce((a,c)=>a+G0[c].length,0),imgs={};
+ if(o.ph){for(const c of cats)for(const p of G0[c])imgs[p.id]=await X.img(p,doc)}
+ /* couverture */
+ page=doc.addPage([W,H]);for(let i=0;i<70;i++){const t=i/69,k=(a,b)=>Math.round(a+(b-a)*t);page.drawRectangle({x:0,y:H-(i+1)*H/70-1,width:W,height:H/70+2,color:L0.rgb(k(10,5)/255,k(46,22)/255,k(112,64)/255)})}
+ RR(M+6,H-135,152,74,12,WHITE);if(logo){const h=56,w=h*logo.width/logo.height;page.drawImage(logo,{x:M+6+(152-w)/2,y:H-135+(74-h)/2,width:w,height:h})}
+ SP('ÉDITION '+DATE,M+8,H*.62,8.5,2.4,GRN,1);
+ T('Catalogue',M+8,H*.62-52,{s:42,b:1,col:WHITE});T('des produits',M+8,H*.62-98,{s:42,b:1,col:WHITE});
+ T(X.msg||'Inox · Accessoires · Outillage',M+8,H*.62-128,{s:13,col:C('#d3e2ff'),w:W-2*M-20});
+ const ph4=[];cats.forEach(c=>G0[c].forEach(p=>{if(imgs[p.id]&&ph4.length<4&&!ph4.some(q=>q.categorie===p.categorie&&ph4.length<cats.length))ph4.push(p)}));if(ph4.length<4)cats.forEach(c=>G0[c].forEach(p=>{if(imgs[p.id]&&ph4.length<4&&ph4.indexOf(p)<0)ph4.push(p)}));
+ const cy0=H*.30;R(0,cy0+48,W,2.2,GRN);ph4.forEach((p,i)=>{const bw=(W-2*M-3*14)/4,bx=M+i*(bw+14),by=cy0;RR(bx,by,bw,100,8,WHITE);const im=imgs[p.id],s=Math.min((bw-10)/im.w,90/im.h),w=im.w*s,h=im.h*s;page.drawImage(im.im,{x:bx+(bw-w)/2,y:by+(100-h)/2,width:w,height:h})});
+ let cx=M+8;[['TÉL / WHATSAPP',tel],['ADRESSE',adr]].filter(x=>x[1]).forEach(x=>{SP(x[0],cx,92,7.5,1.8,GRN,1);T(x[1],cx,72,{s:12,col:WHITE,w:220});cx+=Math.max(130,tw(x[1],12)+40)});
+ /* sommaire (rempli à la fin) */
+ const som=doc.addPage([W,H]);let pn=2;
+ const head=()=>{lg(M,H-34,24);T('Catalogue '+date,W-M,H-26,{s:8,col:MUT,r:1});R(0,H-42,W,1.6,GRN);R(0,0,W,0.5,LINE);T([tel?'WhatsApp · '+tel:''].join(''),M,18,{s:7.5,col:MUT});T(nom,W/2,18,{s:7.5,col:MUT,c:1});T(String(pn),W-M,18,{s:8,b:1,col:INK,r:1})};
+ page=som;head();
+ /* produits */
+ const CW=(W-2*M-20)/3,PH=o.ph?92:0,CH=o.ph?176:84,BOT=44;let y=0,col=0;const start={},nums={};cats.forEach((c,i)=>nums[c]=String(i+1).padStart(2,'0'));
+ const newPage=()=>{page=doc.addPage([W,H]);pn++;head();y=H-62;col=0};
+ const band=(cat,sfx)=>{RR(M,y-24,24,24,6,GRN);T(nums[cat],M+12,y-16.5,{s:10,b:1,col:WHITE,c:1});T(cat+(sfx||''),M+34,y-18,{s:17,b:1,col:NAVY});const cw=tw(cat+(sfx||''),17,FB),lbl=G0[cat].length+' article'+(G0[cat].length>1?'s':'');RR(M+34+cw+10,y-20,tw(lbl,7,F)+16,14,7,SOFT);T(lbl,M+34+cw+18,y-16,{s:7,col:MUT});R(M+34+cw+10+tw(lbl,7,F)+26,y-12,W-M-(M+34+cw+10+tw(lbl,7,F)+26),0.6,LINE);y-=36};
+ newPage();
+ for(const cat of cats){if(col){y-=CH+10;col=0}if(y-36-CH<BOT)newPage();start[cat]=pn;band(cat);
+  for(const p of G0[cat]){if(y-CH<BOT){newPage();band(cat,' (suite)')}
+   const x=M+col*(CW+10),yt=y,yb=yt-CH;RR(x,yb,CW,CH,6,WHITE,LINE);
+   if(o.ph){R(x+.5,yt-PH-.5,CW-1,PH,SOFT);const im=imgs[p.id];if(im){const s=Math.min((CW-14)/im.w,(PH-10)/im.h),w=im.w*s,h=im.h*s;page.drawImage(im.im,{x:x+(CW-w)/2,y:yt-PH+(PH-h)/2,width:w,height:h})}}
+   const ty=yt-PH-(o.ph?14:16);wrap(p.nom,8.8,FB,CW-16,2).forEach((l,j)=>T(l,x+8,ty-j*10.5,{s:8.8,b:1}));if(p.sku)T('Réf. '+p.sku,x+8,yb+(o.gr&&p.pg>0&&p.qg>0?50:26)+(o.ph?0:-4),{s:6.5,col:MUT});
+   const by=yb+(o.gr&&p.pg>0&&p.qg>0?22:0)+1;R(x+.5,by,CW-1,23,NAVY);if(o.np){SP('PRIX SUR DEMANDE',x+8,by+8.5,6.4,1,C('#4fd16a'),1);T('WhatsApp',x+CW-8,by+8.5,{s:7,col:C('#b9c8ea'),r:1})}else{SP('PRIX',x+8,by+8.5,6,1.2,C('#4fd16a'),1);const ps=N(p.pv);T('GNF',x+CW-8,by+8.5,{s:6,col:C('#b9c8ea'),r:1});T(ps,x+CW-8-tw('GNF',6)-3,by+7.5,{s:11.5,b:1,col:WHITE,r:1})}
+   if(o.gr&&p.pg>0&&p.qg>0){R(x+.5,yb+1,CW-1,22,GRNL);SP('GROS · DÈS '+X.nf(p.qg)+' PCS',x+8,yb+9,5.8,.8,GRND,1);T('GNF',x+CW-8,yb+9,{s:6,col:GRND,r:1});T(N(p.pg),x+CW-8-tw('GNF',6)-3,yb+8,{s:10,b:1,col:GRND,r:1})}
+   if(col===2){y-=CH+10;col=0}else col++}}
+ /* sommaire */
+ page=som;T('Sommaire',M,H-100,{s:28,b:1,col:NAVY});R(M,H-112,38,3,GRN);
+ const qs=[...new Set(cats.flatMap(c=>G0[c]).filter(p=>o.gr&&p.pg>0&&p.qg>0).map(p=>p.qg))],qtxt=qs.length===1?' Prix de gros dès '+X.nf(qs[0])+' pièces par référence.':(qs.length?' Prix de gros selon la quantité indiquée sur chaque référence.':'');
+ wrap(total+' référence'+(total>1?'s':'')+', classées par famille. '+(o.np?'Prix et disponibilités communiqués sur demande par WhatsApp : sans engagement.':'Tous les prix sont en francs guinéens (GNF).'+qtxt),9,F,W-2*M-40,3).forEach((l,i)=>T(l,M,H-134-i*12,{s:9,col:MUT}));
+ let sy=H-198;cats.forEach(c=>{const pv=G0[c].map(p=>p.pv),mn=Math.min(...pv),mx=Math.max(...pv);RR(M,sy-10,26,26,6,GRN);T(nums[c],M+13,sy-1,{s:10,b:1,col:WHITE,c:1});T(c,M+42,sy-1,{s:13,b:1,col:NAVY});T(G0[c].length+' article'+(G0[c].length>1?'s':'')+(o.np?'':' · de '+N(mn)+(mx>mn?' à '+N(mx):'')+' GNF'),M+190,sy-0.5,{s:8,col:MUT});T('p. '+start[c],W-M,sy-1,{s:10,b:1,col:INK,r:1});R(M,sy-22,W-2*M,0.6,LINE);sy-=50});
+ return {bytes:await doc.save(),name:'Catalogue_'+clT(nom).replace(/[^A-Za-z0-9]+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf',n:total}}
+
+window.dlCat=async function(a){var old=a.innerHTML;if(a.dataset.busy)return;a.dataset.busy=1;a.style.opacity='.7';a.textContent='Préparation du catalogue…';
+ try{var tel=C.tel||(C.whatsapp?fmtWa(C.whatsapp):''),r=await catCore({ph:true,gr:false,np:true,cat:''},{L0:await lib(),clT:clT,prods:P.map(function(x){return {id:x[1],nom:x[2],sku:String(x[3]||'').replace(/^Réf\.\s*/,''),categorie:x[0],pv:0}}),img:img,shop:'Alfa ETS~B',tel:tel,adr:C.adresse,msg:'Votre partenaire en solutions métalliques',nf:function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ')},logo:'logo-cat.png'});
+  var bl=new Blob([r.bytes],{type:'application/pdf'}),u=URL.createObjectURL(bl),l=document.createElement('a');l.href=u;l.download='Catalogue_Alfa_ETS_B.pdf';document.body.appendChild(l);l.click();setTimeout(function(){URL.revokeObjectURL(u);l.remove()},3000)}
+ catch(e){alert(e&&e.message||String(e))}
+ a.innerHTML=old;a.style.opacity='';delete a.dataset.busy};
+})();
 </script>
 </body>
 </html>
