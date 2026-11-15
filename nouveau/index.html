@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,800&display=swap">
-<link rel="stylesheet" href="style.css?v=20261115104459">
+<link rel="stylesheet" href="style.css?v=20261115121348">
 <style>
 #lgW{max-width:380px;margin:0 auto;padding:12vh 20px 30px}#lgW h1{font:800 34px/1.1 Inter,system-ui,sans-serif;font-style:italic;letter-spacing:-.02em;color:#0a1f4d;margin:0 0 4px}
 #lgW p{color:var(--mut);margin:0 0 18px}#lgW .e{background:#fdecea;color:#b73a33;padding:10px 12px;border-radius:12px;margin-bottom:12px}
@@ -597,8 +597,14 @@ async function catCore(o,X){const L0=X.L0,clT=X.clT,doc=await L0.PDFDocument.cre
  const qs=[...new Set(cats.flatMap(c=>G0[c]).filter(p=>o.gr&&p.pg>0&&p.qg>0).map(p=>p.qg))],qtxt=qs.length===1?' Prix de gros dès '+X.nf(qs[0])+' pièces par référence.':(qs.length?' Prix de gros selon la quantité indiquée sur chaque référence.':'');
  wrap(total+' référence'+(total>1?'s':'')+', classées par famille. Tous les prix sont en francs guinéens (GNF).'+qtxt,9,F,W-2*M-40,3).forEach((l,i)=>T(l,M,H-134-i*12,{s:9,col:MUT}));
  let sy=H-198;cats.forEach(c=>{const pv=G0[c].map(p=>p.pv),mn=Math.min(...pv),mx=Math.max(...pv);RR(M,sy-10,26,26,6,GRN);T(nums[c],M+13,sy-1,{s:10,b:1,col:WHITE,c:1});T(c,M+42,sy-1,{s:13,b:1,col:NAVY});T(G0[c].length+' article'+(G0[c].length>1?'s':'')+' · de '+N(mn)+(mx>mn?' à '+N(mx):'')+' GNF',M+190,sy-0.5,{s:8,col:MUT});T('p. '+start[c],W-M,sy-1,{s:10,b:1,col:INK,r:1});R(M,sy-22,W-2*M,0.6,LINE);sy-=50});
+ page=doc.addPage([W,H]);for(let i=0;i<70;i++){const t=i/69,k=(a,b)=>Math.round(a+(b-a)*t);page.drawRectangle({x:0,y:H-(i+1)*H/70-1,width:W,height:H/70+2,color:L0.rgb(k(10,5)/255,k(46,22)/255,k(112,64)/255)})}
+ RR(M+6,H-135,152,74,12,WHITE);if(logo){const h=56,w=h*logo.width/logo.height;page.drawImage(logo,{x:M+6+(152-w)/2,y:H-135+(74-h)/2,width:w,height:h})}
+ T('Une question ?',M+8,H*.60,{s:34,b:1,col:WHITE});T('Un devis ?',M+8,H*.60-42,{s:34,b:1,col:C('#4fd16a')});R(M+8,H*.60-62,44,3,GRN);
+ wrap(o.np?'Écrivez-nous sur WhatsApp : nous vous répondons avec le prix et la disponibilité de chaque produit, sans engagement.':'Contactez-nous pour confirmer les prix et la disponibilité avant votre commande. Tous les prix sont en francs guinéens (GNF).',12,F,W-2*M-60,4).forEach((l,i)=>T(l,M+8,H*.60-90-i*17,{s:12,col:C('#d3e2ff')}));
+ let by2=H*.30;[['TÉL / WHATSAPP',tel],['E-MAIL',X.email||''],['ADRESSE',adr]].filter(x=>x[1]).forEach(x=>{SP(x[0],M+8,by2+16,7.5,1.8,GRN,1);T(x[1],M+8,by2,{s:15,b:1,col:WHITE,w:W-2*M-20});by2-=46});
+ R(0,58,W,2.2,GRN);T(nom,M+8,30,{s:11,b:1,col:WHITE});T('Merci de votre confiance.',W-M,30,{s:10,col:C('#9fb4dc'),r:1});
  return {bytes:await doc.save(),name:'Catalogue_'+clT(nom).replace(/[^A-Za-z0-9]+/g,'_')+'_'+new Date().toISOString().slice(0,10)+'.pdf',n:total}}
-async function catBuild(o){return catCore(o,{L0:await clLib(),clT,prods:PROD.map(p=>({...p,pg:p.pv_gros,qg:p.qte_gros})),img:catImg,shop:SET.nom,tel:SET.cat_tel,adr:SET.cat_adresse,msg:SET.cat_msg,nf,logo:'logo-cat.png'})}
+async function catBuild(o){return catCore(o,{L0:await clLib(),clT,prods:PROD.map(p=>({...p,pg:p.pv_gros,qg:p.qte_gros})),img:catImg,shop:SET.nom,tel:SET.cat_tel,adr:SET.cat_adresse,msg:SET.cat_msg,email:SET.cat_email,nf,logo:'logo-cat.png'})}
 async function catGo(share){try{await catSaveInfo()}catch(e){}const o={ph:$('ct_ph').checked,gr:$('ct_gr').checked,cat:$('ct_c').value};toast('Préparation de la brochure…');
  try{const r=await catBuild(o);if(!r.n)return toast('Aucun produit avec un prix de vente.');const bl=new Blob([r.bytes],{type:'application/pdf'});
   if(share&&navigator.canShare){const f=new File([bl],r.name,{type:'application/pdf'});if(navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:'Catalogue '+(SET.nom||'')});return}catch(e){if(e&&e.name==='AbortError')return}}}
@@ -905,7 +911,7 @@ boot();
 </script><script id="alfa-upd">
 /* v148 — mise à jour automatique : détecte une nouvelle version publiée et recharge l'application */
 (function(){
-var BUILD='20261115104459',busy=false;
+var BUILD='20261115121348',busy=false;
 function ban(){if(document.getElementById('updB'))return;var b=document.createElement('div');b.id='updB';b.style.cssText='position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:100000;background:#0a1f4d;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font:600 14px system-ui,sans-serif;box-shadow:0 8px 24px #0006';b.innerHTML='<span style="flex:1">Nouvelle version disponible</span><button style="border:0;border-radius:10px;padding:9px 14px;background:#fff;color:#0a1f4d;font:700 14px system-ui,sans-serif" onclick="location.reload()">Mettre à jour</button>';(document.body||document.documentElement).appendChild(b)}
 function go(){var a=document.activeElement,typing=a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName),sheet=document.querySelector('#sheet.open,.sheet.open');if(typing||sheet){ban();return}location.reload()}
 function check(){if(busy||document.hidden||navigator.onLine===false)return;busy=true;
