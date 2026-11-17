@@ -175,6 +175,37 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
 .fb a{color:#c9d7f3}
 .fab{position:fixed;right:16px;bottom:16px;width:58px;height:58px;border-radius:50%;background:var(--wa);display:grid;place-items:center;box-shadow:0 10px 24px rgba(0,0,0,.25);z-index:9}
 .fab svg{width:30px;height:30px}
+
+/* ---------- animations (désactivées si « réduire les animations ») ---------- */
+@media(prefers-reduced-motion:no-preference){
+@keyframes aUp{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes aZoom{from{transform:scale(1)}to{transform:scale(1.09)}}
+@keyframes aShine{0%{background-position:0 0}100%{background-position:200% 0}}
+@keyframes aPulse{0%{box-shadow:0 0 0 0 rgba(34,181,90,.55)}70%{box-shadow:0 0 0 16px rgba(34,181,90,0)}100%{box-shadow:0 0 0 0 rgba(34,181,90,0)}}
+@keyframes aPop{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes aFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.hero .bg{animation:aZoom 22s ease-in-out infinite alternate;transform-origin:70% 50%}
+.hero .tag{animation:aUp .7s .05s both}
+.hero h1{animation:aUp .8s .18s both}
+.hero h1 em{background:linear-gradient(100deg,var(--gold) 20%,#fff6c9 45%,var(--gold) 70%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;animation:aShine 4.5s linear infinite}
+.hero p{animation:aUp .8s .32s both}
+.hero .cta{animation:aUp .8s .46s both}
+.hero .btn.wa{animation:aPulse 2.6s 1.6s infinite}
+.fab{animation:aPulse 2.8s 2s infinite}
+.fab:hover{animation:none;transform:scale(1.08)}
+.feat .box>div i,.wg>div>i,.dom>div>i{display:inline-block;animation:aFloat 4s ease-in-out infinite}
+.feat .box>div:nth-child(2) i,.wg>div:nth-child(2)>i,.dom>div:nth-child(2)>i{animation-delay:.6s}
+.feat .box>div:nth-child(3) i,.wg>div:nth-child(3)>i,.dom>div:nth-child(3)>i{animation-delay:1.2s}
+.feat .box>div:nth-child(4) i,.wg>div:nth-child(4)>i{animation-delay:1.8s}
+.js-anim .rv{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
+.js-anim .rv.in{opacity:1;transform:none}
+#cat .card{animation:aPop .55s both;animation-delay:calc(var(--i,0)*60ms)}
+.card img{transition:transform .35s}.card:hover img{transform:scale(1.07)}
+.btn{transition:transform .18s,box-shadow .18s,filter .18s}.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}.btn:active{transform:scale(.97)}
+.steps>div,.dom>div,.wg>div,.feat .box>div{transition:transform .25s,box-shadow .25s}
+.steps>div:hover,.dom>div:hover{transform:translateY(-5px)}
+.chips button{transition:transform .15s,background .2s}.chips button:active{transform:scale(.95)}
+}
 </style>
 </head>
 <body>
@@ -400,6 +431,21 @@ var ld={"@context":"https://schema.org","@type":"HardwareStore","name":"Alfa ETS
 if(C.tel)ld.telephone=C.tel;if(C.email)ld.email=C.email;
 var s=document.createElement('script');s.type='application/ld+json';s.textContent=JSON.stringify(ld);document.head.appendChild(s);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
+</script>
+<script>
+/* animations au défilement : le contenu reste visible si le script ne s'exécute pas */
+(function(){
+ if(!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
+ var de=document.documentElement;de.classList.add('js-anim');
+ var sel=['.feat .box>div','.sh','.wg>div','.dom>div','.steps>div','.band','#fg>*'];
+ var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
+ function arm(){sel.forEach(function(q){var L=document.querySelectorAll(q);for(var i=0;i<L.length;i++){var el=L[i];if(el.__rv)continue;el.__rv=1;el.classList.add('rv');el.style.setProperty('--d',((i%4)*0.09)+'s');io.observe(el)}})}
+ arm();setTimeout(arm,1500);
+ /* sécurité : tout devient visible après 4 s même si l'observateur ne se déclenche pas */
+ setTimeout(function(){var L=document.querySelectorAll('.rv:not(.in)');for(var i=0;i<L.length;i++)L[i].classList.add('in')},4000);
+})();
+/* échelonne l'apparition des cartes du catalogue */
+(function(){var c=document.getElementById('cat');if(!c)return;function st(){var L=c.children;for(var i=0;i<L.length;i++)L[i].style.setProperty('--i',i)}st();new MutationObserver(st).observe(c,{childList:true})})();
 </script>
 </body>
 </html>
