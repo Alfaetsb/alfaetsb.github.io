@@ -206,6 +206,13 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
 .steps>div:hover,.dom>div:hover{transform:translateY(-5px)}
 .chips button{transition:transform .15s,background .2s}.chips button:active{transform:scale(.95)}
 }
+
+/* ---------- partenaires ateliers ---------- */
+.part{margin-top:16px;display:flex;align-items:center;gap:20px;background:linear-gradient(120deg,rgba(245,179,1,.2),rgba(255,255,255,.07));border:1px solid rgba(245,179,1,.45);border-radius:18px;padding:18px 24px;color:#fff}
+.part .pn b{display:block;font-size:clamp(44px,9vw,60px);font-weight:900;color:var(--gold);line-height:1;letter-spacing:-1px}
+.part .pt b{display:block;font-size:clamp(18px,3.4vw,24px);margin-bottom:3px}
+.part .pt p{margin:0;color:#c9d7f3;font-size:14.5px;line-height:1.45}
+@media(max-width:560px){.part{gap:14px;padding:16px 18px}}
 </style>
 </head>
 <body>
@@ -255,6 +262,7 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
   <div><i>🔧</i><span><b>Le bon diamètre</b><p><b>Tubes ronds :</b> Ø 19, 25, 38, 50,8 et 63 mm.<br><b>Autres tubes :</b> carré 30×30 mm, rectangulaire 13×25 mm.<br>On vous aide à choisir les pièces compatibles avec vos tubes.</p></span></div>
   <div><i>💰</i><span><b>Pour tous les budgets</b><p>Achat à la pièce pour les particuliers, prix adaptés pour les grossistes et les professionnels.</p></span></div>
  </div>
+ <div class="part"><div class="pn"><b id="pn" data-n="15">+15</b></div><div class="pt"><b>ateliers de fabrication partenaires</b><p>Des ateliers qui nous font confiance pour leurs tubes, accessoires et finitions en inox.</p></div></div>
 </div></section>
 
 <section id="metiers"><div class="w">
@@ -435,7 +443,7 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 (function(){
  if(!window.matchMedia||matchMedia('(prefers-reduced-motion: reduce)').matches||!('IntersectionObserver' in window))return;
  var de=document.documentElement;de.classList.add('js-anim');
- var sel=['.feat .box>div','.sh','.wg>div','.dom>div','.steps>div','.band','#fg>*'];
+ var sel=['.feat .box>div','.part','.sh','.wg>div','.dom>div','.steps>div','.band','#fg>*'];
  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12,rootMargin:'0px 0px -6% 0px'});
  function arm(){sel.forEach(function(q){var L=document.querySelectorAll(q);for(var i=0;i<L.length;i++){var el=L[i];if(el.__rv)continue;el.__rv=1;el.classList.add('rv');el.style.setProperty('--d',((i%4)*0.09)+'s');io.observe(el)}})}
  arm();setTimeout(arm,1500);
@@ -444,6 +452,12 @@ if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceW
 })();
 /* échelonne l'apparition des cartes du catalogue */
 (function(){var c=document.getElementById('cat');if(!c)return;function st(){var L=c.children;for(var i=0;i<L.length;i++)L[i].style.setProperty('--i',i)}st();new MutationObserver(st).observe(c,{childList:true})})();
+</script>
+<script>
+/* compteur animé « +15 » (le texte reste visible sans script) */
+(function(){var e=document.getElementById('pn');if(!e||!('IntersectionObserver' in window)||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches))return;
+ var N=+e.getAttribute('data-n')||15,done=0;
+ new IntersectionObserver(function(es,o){es.forEach(function(x){if(x.isIntersecting&&!done){done=1;o.disconnect();var t0=null;(function f(t){if(!t0)t0=t;var k=Math.min(1,(t-t0)/1200);e.textContent='+'+Math.round(N*(1-Math.pow(1-k,3)));if(k<1)requestAnimationFrame(f)})(performance.now())}})},{threshold:.5}).observe(e)})();
 </script>
 </body>
 </html>
