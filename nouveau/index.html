@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@1,800&display=swap">
-<link rel="stylesheet" href="style.css?v=20261115121348">
+<link rel="stylesheet" href="style.css?v=20261118141159">
 <style>
 #lgW{max-width:380px;margin:0 auto;padding:12vh 20px 30px}#lgW h1{font:800 34px/1.1 Inter,system-ui,sans-serif;font-style:italic;letter-spacing:-.02em;color:#0a1f4d;margin:0 0 4px}
 #lgW p{color:var(--mut);margin:0 0 18px}#lgW .e{background:#fdecea;color:#b73a33;padding:10px 12px;border-radius:12px;margin-bottom:12px}
@@ -397,7 +397,7 @@ async function acPaySave(id){if(acLock)return;const a=acById(id),b=acBal(id),m=M
 function acRec(pid){const x=AC_.P.find(k=>k.id===pid);if(!x)return;
  openSheet(`<h2 style="margin-top:0">🧾 Reçu de paiement</h2><div class="k gold"><span>${esc(x.rec)} · ${pmDT(x.date)}</span><b>${FG(x.montant)}</b></div><p style="margin:10px 0 2px"><b>${esc(x.nom)}</b></p><p style="color:var(--mut);margin:0">Mode : ${esc(x.mode)} · Payé par : ${esc(x.par||'—')}${x.note?'<br>Note : '+esc(x.note):''}<br>Solde restant après paiement : ${FG(x.solde_apres)}</p><div class="row" style="margin-top:12px"><button class="btn gold" onclick="acRecOut(${pid})">⬇ Télécharger</button><button class="btn" onclick="acRecWa(${pid})">💬 WhatsApp</button></div><button class="btn ghost" style="width:100%;margin-top:8px" onclick="acDetail(${x.actionnaire_id})">Fermer</button>`)}
 function acRecOut(pid){const x=AC_.P.find(k=>k.id===pid);if(!x)return;const N=esc(SET.nom||'Alfa ETS~B'),
- h=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Reçu ${esc(x.rec)}</title><style>body{font:15px system-ui,sans-serif;max-width:520px;margin:24px auto;padding:0 16px;color:#102044}h1{font-size:20px;margin:0}.s{color:#6b7a93;font-size:13px}table{width:100%;border-collapse:collapse;margin:16px 0}td{padding:9px 4px;border-bottom:1px solid #e1e8f2}td:last-child{text-align:right;font-weight:700}.sg{display:flex;justify-content:space-between;margin-top:40px;font-size:13px;color:#6b7a93}button{margin-top:20px;padding:12px 16px;border:0;border-radius:10px;background:#0a1f4d;color:#fff;font:700 14px system-ui}@media print{button{display:none}}</style></head><body><h1>${N}</h1><div class="s">Reçu de paiement de dividendes</div><p class="s">N° <b>${esc(x.rec)}</b> · ${pmDT(x.date)}</p><table><tr><td>Actionnaire</td><td>${esc(x.nom)}</td></tr><tr><td>Montant versé</td><td>${FG(x.montant)}</td></tr><tr><td>Mode de paiement</td><td>${esc(x.mode)}</td></tr><tr><td>Solde restant</td><td>${FG(x.solde_apres)}</td></tr>${x.note?`<tr><td>Note</td><td>${esc(x.note)}</td></tr>`:''}</table><div class="sg"><span>Signature de l’actionnaire</span><span>Pour ${N} (${esc(x.par||'')})</span></div><button onclick="window.print()">Imprimer / enregistrer en PDF</button></body></html>`,
+ h=`<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Reçu ${esc(x.rec)}</title><style>body{font:15px system-ui,sans-serif;max-width:520px;margin:24px auto;padding:0 16px;color:#102044}h1{font-size:20px;margin:0}.s{color:#6b7a93;font-size:13px}table{width:100%;border-collapse:collapse;margin:16px 0}td{padding:9px 4px;border-bottom:1px solid #e1e8f2}td:last-child{text-align:right;font-weight:700}.sg{display:flex;justify-content:space-between;margin-top:40px;font-size:13px;color:#6b7a93}button{margin-top:20px;padding:12px 16px;border:0;border-radius:10px;background:#0a1f4d;color:#fff;font:700 14px system-ui}@media print{button{display:none}}</style></head><body><h1>${N}</h1><div class="s">Reçu de paiement de dividendes</div><p class="s">N° <b>${esc(x.rec)}</b> · ${pmDT(x.date)}</p><table><tr><td>Actionnaire</td><td>${esc(x.nom)}</td></tr><tr><td>Montant versé</td><td>${FG(x.montant)}</td></tr><tr><td>Mode de paiement</td><td>${esc(x.mode)}</td></tr><tr><td>Solde restant</td><td>${FG(x.solde_apres)}</td></tr>${x.note?`<tr><td>Note</td><td>${esc(x.note)}</td></tr>`:''}</table><div class="sg"><span>Signature de l’actionnaire</span><span>Pour ${N} (${esc(x.par||'')})</span></div><button onclick="window.print()">Imprimer / enregistrer en PDF</button><p style="text-align:center;color:#6b7a93;font-size:12px;margin:22px 0 0;border-top:1px solid #e1e8f2;padding-top:10px">Tél. +224 622 93 92 59 · Alfaetsb@gmail.com</p></body></html>`,
  u=URL.createObjectURL(new Blob([h],{type:'text/html;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download='Reçu '+x.rec+'.html';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(u)},1500)}
 function acRecWa(pid){const x=AC_.P.find(k=>k.id===pid);if(!x)return;const a=acById(x.actionnaire_id),tel=a&&a.tel?String(a.tel).replace(/\D/g,''):'',T=t=>(window.__tr?window.__tr(t):t);
  window.open('https://wa.me/'+tel+'?text='+encodeURIComponent('*'+(SET.nom||'Alfa ETS~B')+'* — '+T('Reçu')+' '+x.rec+'\n'+T('Actionnaire')+' : '+x.nom+'\n'+T('Montant versé')+' : '+FG(x.montant)+' ('+T(x.mode)+')\n'+T('Date')+' : '+acDt(x.date)+'\n'+T('Solde restant')+' : '+FG(x.solde_apres)),'_blank')}
@@ -936,13 +936,34 @@ boot();
 </script><script id="alfa-upd">
 /* v148 — mise à jour automatique : détecte une nouvelle version publiée et recharge l'application */
 (function(){
-var BUILD='20261115121348',busy=false;
+var BUILD='20261118141159',busy=false;
 function ban(){if(document.getElementById('updB'))return;var b=document.createElement('div');b.id='updB';b.style.cssText='position:fixed;left:12px;right:12px;top:calc(10px + env(safe-area-inset-top,0px));z-index:100000;background:#0a1f4d;color:#fff;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;font:600 14px system-ui,sans-serif;box-shadow:0 8px 24px #0006';b.innerHTML='<span style="flex:1">Nouvelle version disponible</span><button style="border:0;border-radius:10px;padding:9px 14px;background:#fff;color:#0a1f4d;font:700 14px system-ui,sans-serif" onclick="location.reload()">Mettre à jour</button>';(document.body||document.documentElement).appendChild(b)}
 function go(){var a=document.activeElement,typing=a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName),sheet=document.querySelector('#sheet.open,.sheet.open');if(typing||sheet){ban();return}location.reload()}
 function check(){if(busy||document.hidden||navigator.onLine===false)return;busy=true;
  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(j){busy=false;if(j&&j.v&&j.v!==BUILD)go()}).catch(function(){busy=false})}
 document.addEventListener('visibilitychange',function(){if(!document.hidden)setTimeout(check,300)});
 window.addEventListener('focus',check);window.addEventListener('online',check);setInterval(check,60000);setTimeout(check,2000);
+})();
+</script>
+<script id="alfa-pdfcontact">
+/* Coordonnées de contact en bas de chaque page de tous les PDF (rapports, devis, reçus, catalogue…) */
+(function(){
+var LINE='Tél. +224 622 93 92 59  ·  Alfaetsb@gmail.com';
+function patch(L){
+ if(!L||!L.PDFDocument||L.__alfaCt)return;L.__alfaCt=1;
+ var P=L.PDFDocument.prototype,SF=L.StandardFonts,RG=L.rgb;
+ async function foot(d){
+  if(d.__ct)return;d.__ct=1;
+  try{
+   var f=await d.embedFont(SF.Helvetica),pgs=d.getPages();
+   for(var i=0;i<pgs.length;i++){var p=pgs[i],sz=p.getSize(),s=7,w=f.widthOfTextAtSize(LINE,s);
+    p.drawText(LINE,{x:Math.max(8,(sz.width-w)/2),y:8,size:s,font:f,color:RG(.42,.47,.56)})}
+  }catch(e){}
+ }
+ ['save','saveAsBase64'].forEach(function(n){var o=P[n];if(typeof o!=='function')return;P[n]=async function(){await foot(this);return o.apply(this,arguments)}});
+}
+try{if(window.PDFLib)patch(window.PDFLib)}catch(e){}
+if(!window.PDFLib){var v;try{Object.defineProperty(window,'PDFLib',{configurable:true,get:function(){patch(v);return v},set:function(x){v=x;patch(x)}})}catch(e){}}
 })();
 </script>
 <script id="alfa-i18n">(function(){
