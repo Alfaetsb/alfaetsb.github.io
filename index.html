@@ -299,7 +299,7 @@ footer{background:#071739;color:#c9d7f3;font-size:14.5px}
 var C={
   tel:'+224 622 93 92 59',          /* ex : '+224 622 00 00 00' */
   whatsapp:'224622939259',     /* ex : '224622000000' (sans + ni espaces) */
- email:'',          /* ex : 'contact@alfaetsb.com' */
+ email:'Alfaetsb@gmail.com',          /* ex : 'contact@alfaetsb.com' */
  adresse:'Sonfonia SOS, Conakry, Guinée',  /* ex : 'Madina, près du marché, Conakry' */
   horaires:'Lun–Sam : 8h – 18h',     /* ex : 'Lun–Sam : 8h – 19h' */
  facebook:'https://www.facebook.com/share/1FFSUdtHnE/',instagram:'',tiktok:''   /* liens complets, facultatifs */
@@ -426,7 +426,7 @@ retry();setInterval(retry,30000);
 catLoad();
 qBadge();
 /* Données structurées pour Google */
-var ld={"@context":"https://schema.org","@type":"HardwareStore","name":"Alfa ETS~B","url":"https://alfaetsb.com/","image":"https://alfaetsb.com/img-hero.webp","logo":"https://alfaetsb.com/img-logo-full.png","description":"Accessoires et tubes en acier inoxydable à Conakry : boules, rosaces, supports, connecteurs, pinces à verre, décorations.","sameAs":["https://www.facebook.com/share/1FFSUdtHnE/"],"address":{"@type":"PostalAddress","streetAddress":C.adresse,"addressLocality":"Conakry","addressCountry":"GN"}};
+var ld={"@context":"https://schema.org","@type":"HardwareStore","email":"Alfaetsb@gmail.com","name":"Alfa ETS~B","url":"https://alfaetsb.com/","image":"https://alfaetsb.com/img-hero.webp","logo":"https://alfaetsb.com/img-logo-full.png","description":"Accessoires et tubes en acier inoxydable à Conakry : boules, rosaces, supports, connecteurs, pinces à verre, décorations.","sameAs":["https://www.facebook.com/share/1FFSUdtHnE/"],"address":{"@type":"PostalAddress","streetAddress":C.adresse,"addressLocality":"Conakry","addressCountry":"GN"}};
 if(C.tel)ld.telephone=C.tel;if(C.email)ld.email=C.email;
 var s=document.createElement('script');s.type='application/ld+json';s.textContent=JSON.stringify(ld);document.head.appendChild(s);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
