@@ -693,3 +693,4 @@ body.dk #rpOv{background:#0d1526}body.dk .rpTop h1,body.dk .rpH b{color:#e8f0ff}
 #rpOv .rpH b{font-size:16px}#rpOv .rpH span:not(.rpK){font-size:13px}#rpOv .rpS>span{font-size:13.5px}#rpOv .rpQ{min-width:84px}#rpOv .rpQ b{font-size:24px}#rpOv .rpQ small{font-size:12px}
 #rpOv .rpWa{font-size:16px;height:52px;border-radius:18px}#rpOv .rpCp{width:52px;height:52px;border-radius:18px}
 .ctC{display:flex!important;align-items:center;gap:10px;margin:12px 0 0!important;font-weight:600;font-size:14.5px}.ctC input{width:22px!important;height:22px;margin:0!important;flex:none}
+.avw .eyeB{display:flex;flex-direction:column;align-items:center;gap:1px}.avw .eyeB.on{color:var(--gold)}
