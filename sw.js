@@ -3,9 +3,9 @@
    - Fichiers statiques du même site : cache d'abord, mise à jour en arrière-plan
    - Requêtes d'autres sites (synchronisation cloud, API) : jamais interceptées
    Pour publier une nouvelle version : changer VERSION ci-dessous. */
-var VERSION = 'alfa-ets-b-v46';
+var VERSION = 'alfa-ets-b-v47';
 var CACHE = VERSION;
-var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.png'];
+var SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon.png', 'brand.woff'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
