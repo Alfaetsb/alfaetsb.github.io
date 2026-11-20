@@ -315,7 +315,7 @@ var C={
  email:'Alfaetsb@gmail.com',          /* ex : 'contact@alfaetsb.com' */
  adresse:'Sonfonia SOS, Conakry, Guinée',  /* ex : 'Madina, près du marché, Conakry' */
   horaires:'Lun–Sam : 8h – 18h',     /* ex : 'Lun–Sam : 8h – 19h' */
- facebook:'https://www.facebook.com/share/1FFSUdtHnE/',instagram:'',tiktok:''   /* liens complets, facultatifs */
+ facebook:'https://www.facebook.com/share/1FFSUdtHnE/',instagram:'https://www.instagram.com/alfa.etsb',tiktok:''   /* liens complets, facultatifs */
 };
 /* ============================================== */
 var IC={pin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',tel:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',wa:'<path d="M20.5 11.6a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.5-4.3a8.5 8.5 0 1 1 15.5-4.6z"/>',mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'};
@@ -441,7 +441,7 @@ retry();setInterval(retry,30000);
 catLoad();
 qBadge();
 /* Données structurées pour Google */
-var ld={"@context":"https://schema.org","@type":"HardwareStore","email":"Alfaetsb@gmail.com","name":"Alfa ETS~B","url":"https://alfaetsb.com/","image":"https://alfaetsb.com/img-hero.webp","logo":"https://alfaetsb.com/img-logo-full.png","description":"Accessoires et tubes en acier inoxydable à Conakry : boules, rosaces, supports, connecteurs, pinces à verre, décorations.","sameAs":["https://www.facebook.com/share/1FFSUdtHnE/"],"address":{"@type":"PostalAddress","streetAddress":C.adresse,"addressLocality":"Conakry","addressCountry":"GN"}};
+var ld={"@context":"https://schema.org","@type":"HardwareStore","email":"Alfaetsb@gmail.com","name":"Alfa ETS~B","url":"https://alfaetsb.com/","image":"https://alfaetsb.com/img-hero.webp","logo":"https://alfaetsb.com/img-logo-full.png","description":"Accessoires et tubes en acier inoxydable à Conakry : boules, rosaces, supports, connecteurs, pinces à verre, décorations.","sameAs":["https://www.facebook.com/share/1FFSUdtHnE/","https://www.instagram.com/alfa.etsb"],"address":{"@type":"PostalAddress","streetAddress":C.adresse,"addressLocality":"Conakry","addressCountry":"GN"}};
 if(C.tel)ld.telephone=C.tel;if(C.email)ld.email=C.email;
 var s=document.createElement('script');s.type='application/ld+json';s.textContent=JSON.stringify(ld);document.head.appendChild(s);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(function(){});
