@@ -26,7 +26,7 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .top .w{display:flex;align-items:center;gap:14px;min-height:70px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
 .brand img{width:42px;height:42px;object-fit:contain;border-radius:11px;box-shadow:0 2px 8px #0003}
-@font-face{font-family:'AlfaBrand';src:url(/brand.woff) format('woff');font-weight:800;font-style:italic;font-display:swap}.brand b{display:block;font-family:'AlfaBrand','Inter',system-ui,sans-serif;font-style:italic;font-size:22px;font-weight:800;letter-spacing:0;line-height:1.1}
+@font-face{font-family:'AlfaBrand';src:url(/brand.woff) format('woff');font-weight:800;font-style:italic;font-display:swap}.brand span{white-space:nowrap;min-width:0}.brand{flex:none}.brand b{display:block;white-space:nowrap;font-family:'AlfaBrand','Inter',system-ui,sans-serif;font-style:italic;font-size:22px;font-weight:800;letter-spacing:0;line-height:1.1}
 .brand small{display:block;font-size:12px;color:#c9d7f3}
 .brand small i{color:var(--gold);font-style:normal}
 .tr{margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
@@ -43,8 +43,8 @@ svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-widt
 .menuBtn{display:none;background:none;border:0;color:#fff;padding:8px;margin-left:4px}
 @media(max-width:900px){.info{display:none}.nav a:not(.team){display:none}.menuBtn{display:block}
  .nav.open{position:absolute;left:0;right:0;top:100%;background:#0a1f4d;flex-direction:column;align-items:stretch;padding:8px 14px 14px;box-shadow:0 12px 24px rgba(0,0,0,.3)}
- .nav.open a{display:block!important;padding:12px}.nav.open .team{justify-content:center;margin:8px 0 0}.brand b{font-size:19px}.tl{display:none}.ts{display:inline}.team{padding:8px 11px!important;margin-left:0}.nav.open .tl{display:inline}.nav.open .ts{display:none}}
-@media(max-width:380px){.brand small{display:none}}
+ .nav.open a{display:block!important;padding:12px}.nav.open .team{justify-content:center;margin:8px 0 0}.brand b{font-size:17.5px}.tl{display:none}.ts{display:inline}.team{padding:8px 11px!important;margin-left:0}.nav.open .tl{display:inline}.nav.open .ts{display:none}}
+@media(max-width:440px){.brand small{display:none}}@media(max-width:340px){.brand b{font-size:15.5px}.brand img{width:34px;height:34px}.brand{gap:7px}}
 /* ---------- hero ---------- */
 .hero{position:relative;background:#0a1f4d;color:#fff;overflow:hidden}
 .hero .bg{position:absolute;inset:0 0 0 38%;background:url(img-hero.webp) center/cover no-repeat}
